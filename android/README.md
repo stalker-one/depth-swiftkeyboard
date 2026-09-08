@@ -17,6 +17,15 @@ This folder contains the native Android Input Method Service for Depth Keyboard.
 
 The service supports letters, shift, symbols, backspace, space, enter, emoji, and switching to the next installed input method. A debug APK is not signed for Play Store distribution.
 
-## GitHub Actions
+## GitHub Actions and Releases
 
-Every push to `main` and every pull request runs `.github/workflows/android.yml`. Download `app-debug.apk` from the workflow run's artifact, then install it on an Android device. For Play Store publishing, configure a release keystore and signed release workflow separately.
+Every push to `master` and every pull request runs `.github/workflows/android.yml`. Download `app-debug.apk` from the workflow run's artifact, then install it on an Android device.
+
+To publish an APK in GitHub Releases, create and push a version tag such as `v1.0.0`:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow builds the debug APK and attaches it to the release automatically. Debug APKs are for testing and are not signed for Play Store distribution.
