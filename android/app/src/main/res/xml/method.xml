@@ -1,1 +1,12 @@
-<input-method xmlns:android="http://schemas.android.com/apk/res/android" android:supportsSwitchingToNextInputMethod="true" />
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:supportsSwitchingToNextInputMethod="true"
+    android:settingsActivity="com.stalkerone.depthkeyboard.SettingsActivity">
+    <subtype
+        android:label="English"
+        android:imeSubtypeLocale="en_US"
+        android:imeSubtypeMode="keyboard" />
+    <subtype
+        android:label="Español"
+        android:imeSubtypeLocale="es_ES"
+        android:imeSubtypeMode="keyboard" />
+</input-method>
