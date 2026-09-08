@@ -10,6 +10,7 @@ import {
   Copy,
   Delete,
   Ellipsis,
+  Download,
   Globe2,
   Image as ImageIcon,
   Languages,
@@ -29,6 +30,8 @@ import {
   WandSparkles,
   Zap,
 } from 'lucide-react'
+
+const apkDownloadUrl = 'https://github.com/stalker-one/depth-swiftkeyboard/releases/download/Depth-SwiftKeyboard/app-debug.apk'
 
 const letters = [
   ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -68,6 +71,11 @@ export default function DepthKeyboard() {
       <div className="workspace">
         <section className="demo-column">
           <div className="section-heading"><div><p className="eyebrow">LIVE PREVIEW</p><h2>Your keyboard, your flow.</h2></div><span className="live-pill"><span /> Live</span></div>
+          <div className="download-card">
+            <div className="download-icon"><Download size={19} /></div>
+            <div className="download-copy"><p className="eyebrow">ANDROID APP</p><h3>Try Depth Keyboard on your phone.</h3><p>Download the latest test APK from GitHub and enable it in Android Settings.</p></div>
+            <a className="download-button" href={apkDownloadUrl} download="depth-keyboard.apk"><Download size={16} /> Download APK</a>
+          </div>
           <div className="typing-card">
             <div className="editor-top"><span className="editor-dot" /><span className="editor-dot" /><span className="editor-dot" /><span className="editor-label">Message</span><Ellipsis size={17} /></div>
             <div className="editor-body"><p className="typing-copy">{displayText}<span className="caret" /></p><div className="editor-meta"><span>To: Alex</span><span>{text.length} characters</span></div></div>
@@ -84,6 +92,7 @@ export default function DepthKeyboard() {
             </>}
             <div className="keyboard-footer"><span><Globe2 size={14} /> {language}</span><span>Depth Keyboard <span className="footer-dot">•</span> {sound ? 'Sound on' : 'Silent'}</span></div>
           </div>
+          <div className="install-note"><span>1</span><p><strong>Install</strong> the APK, then open Depth Keyboard.</p><span>2</span><p><strong>Enable</strong> it under Android Settings → System → Keyboard.</p><span>3</span><p><strong>Choose</strong> Depth Keyboard when you start typing.</p></div>
         </section>
 
         <aside className="settings-column">
