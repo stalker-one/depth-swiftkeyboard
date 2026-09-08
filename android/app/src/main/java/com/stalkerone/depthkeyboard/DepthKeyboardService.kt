@@ -61,6 +61,7 @@ class DepthKeyboardService : InputMethodService() {
         addKey(toolbar, "📋", .8f, foreground) { pasteClipboard(); refresh() }
         addKey(toolbar, "🌐", .8f, foreground) { spanish = !spanish; refresh() }
         addKey(toolbar, "123", .9f, foreground) { symbols = !symbols; refresh() }
+        addKey(toolbar, "↕", .8f, foreground) { adjustSize() }
         val language = TextView(this).apply { text = if (spanish) "ES" else "EN"; setTextColor(if (darkTheme) Color.rgb(148, 163, 184) else Color.DKGRAY); textSize = 11f; gravity = Gravity.CENTER }
         toolbar.addView(language, LinearLayout.LayoutParams(0, scaled(42), 1f))
         addKey(toolbar, "⚙", .8f, foreground) { startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
@@ -110,7 +111,7 @@ class DepthKeyboardService : InputMethodService() {
         return root
     }
 
-    private fun scaled(value: Int) = (value * sizeScale).roundToInt()
+    private fun scaled(value: Int) = dp(value * sizeScale)
 
     private fun addKey(row: LinearLayout, label: String, weight: Float, foreground: Int, action: () -> Unit) {
         val button = Button(this).apply {
@@ -122,6 +123,13 @@ class DepthKeyboardService : InputMethodService() {
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).roundToInt()
     private fun dp(value: Float): Int = (value * resources.displayMetrics.density).roundToInt()
+    private fun adjustSize() {
+        val current = prefs.getInt(SettingsActivity.KEY_SIZE, 100)
+        val next = if (current >= 140) 80 else current + 10
+        prefs.edit().putInt(SettingsActivity.KEY_SIZE, next).apply()
+        Toast.makeText(this, "Keyboard size: $next%", Toast.LENGTH_SHORT).show()
+        refresh()
+    }
     private fun commitText(text: String) { currentInputConnection?.commitText(text, 1) }
     private fun commitSuggestion(word: String) { currentInputConnection?.commitText("$word ", 1) }
     private fun deleteBackwards() { currentInputConnection?.deleteSurroundingText(1, 0) }

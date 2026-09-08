@@ -45,7 +45,7 @@ class SettingsActivity : Activity() {
 
         root.addView(sectionTitle("Keyboard size"))
         val sizeValue = TextView(this).apply { textSize = 13f; setTextColor(0xff5669d5.toInt()) }
-        val sizeBar = SeekBar(this).apply { max = 40; progress = prefs.getInt(KEY_SIZE, 100) - 80 }
+        val sizeBar = SeekBar(this).apply { max = 60; progress = prefs.getInt(KEY_SIZE, 100).coerceIn(80, 140) - 80 }
         fun updateSizeLabel() { sizeValue.text = "${sizeBar.progress + 80}%" }
         sizeBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(bar: SeekBar?, value: Int, fromUser: Boolean) { prefs.edit().putInt(KEY_SIZE, value + 80).apply(); updateSizeLabel() }
