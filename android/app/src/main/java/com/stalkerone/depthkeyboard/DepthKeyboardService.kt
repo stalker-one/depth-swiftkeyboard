@@ -4,14 +4,17 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.content.Intent
 import android.inputmethodservice.InputMethodService
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import kotlin.math.roundToInt
 
 class DepthKeyboardService : InputMethodService() {
     private var shifted = false
@@ -22,93 +25,91 @@ class DepthKeyboardService : InputMethodService() {
     private val symbolsRows = listOf("1234567890", "@#$%&*+-=", "()[]{}!?/")
     private val emojis = listOf("😀", "😂", "😍", "👍", "🔥", "✨", "🎉", "🤔", "😭", "🙏")
 
+    private val prefs get() = getSharedPreferences(SettingsActivity.PREFS, MODE_PRIVATE)
+    private val sizeScale get() = prefs.getInt(SettingsActivity.KEY_SIZE, 100) / 100f
+    private val compact get() = prefs.getBoolean(SettingsActivity.KEY_COMPACT, false)
+    private val oneHanded get() = prefs.getBoolean(SettingsActivity.KEY_ONE_HANDED, false)
+    private val darkTheme get() = prefs.getBoolean(SettingsActivity.KEY_DARK_THEME, true)
+    private val suggestionsEnabled get() = prefs.getBoolean(SettingsActivity.KEY_SUGGESTIONS, true)
+
     override fun onCreateInputView(): View = buildKeyboard()
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
-        shifted = false
-        symbols = false
-        tools = false
+        shifted = false; symbols = false; tools = false
     }
 
     override fun onEvaluateInputViewShown(): Boolean = true
 
     private fun buildKeyboard(): View {
+        val background = if (darkTheme) Color.rgb(17, 24, 39) else Color.rgb(244, 247, 251)
+        val foreground = if (darkTheme) Color.WHITE else Color.rgb(24, 36, 58)
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
+            gravity = if (oneHanded) Gravity.END else Gravity.CENTER
             setPadding(8, 8, 8, 12)
-            setBackgroundColor(Color.rgb(17, 24, 39))
+            setBackgroundColor(background)
         }
+        val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(background) }
+        val contentWidth = if (oneHanded) resources.displayMetrics.widthPixels * .82f else ViewGroup.LayoutParams.MATCH_PARENT
+        root.addView(content, LinearLayout.LayoutParams(contentWidth.roundToInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
+
         val toolbar = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
-        addKey(toolbar, "☺", .8f) { tools = !tools; refresh() }
-        addKey(toolbar, "📋", .8f) { pasteClipboard(); refresh() }
-        addKey(toolbar, "🌐", .8f) { spanish = !spanish; refresh() }
-        addKey(toolbar, "123", .9f) { symbols = !symbols; refresh() }
-        val language = TextView(this).apply {
-            text = if (spanish) "ES" else "EN"
-            setTextColor(Color.rgb(148, 163, 184)); textSize = 11f; gravity = Gravity.CENTER
-        }
-        toolbar.addView(language, LinearLayout.LayoutParams(0, 42, 1f))
-        root.addView(toolbar, LinearLayout.LayoutParams(-1, 48))
+        addKey(toolbar, "☺", .8f, foreground) { tools = !tools; refresh() }
+        addKey(toolbar, "📋", .8f, foreground) { pasteClipboard(); refresh() }
+        addKey(toolbar, "🌐", .8f, foreground) { spanish = !spanish; refresh() }
+        addKey(toolbar, "123", .9f, foreground) { symbols = !symbols; refresh() }
+        val language = TextView(this).apply { text = if (spanish) "ES" else "EN"; setTextColor(if (darkTheme) Color.rgb(148, 163, 184) else Color.DKGRAY); textSize = 11f; gravity = Gravity.CENTER }
+        toolbar.addView(language, LinearLayout.LayoutParams(0, scaled(42), 1f))
+        addKey(toolbar, "⚙", .8f, foreground) { startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        content.addView(toolbar, LinearLayout.LayoutParams(-1, scaled(48)))
 
         if (tools) {
             val toolRow = LinearLayout(this).apply { gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL }
-            emojis.forEach { emoji -> addKey(toolRow, emoji, 1f) { commitText(emoji) } }
-            root.addView(toolRow, LinearLayout.LayoutParams(-1, 48))
-        } else {
+            emojis.forEach { emoji -> addKey(toolRow, emoji, 1f, foreground) { commitText(emoji) } }
+            content.addView(toolRow, LinearLayout.LayoutParams(-1, scaled(48)))
+        } else if (suggestionsEnabled) {
             val suggestions = LinearLayout(this).apply { gravity = Gravity.CENTER }
             val words = if (spanish) listOf("que", "para", "cómo") else listOf("the", "and", "you")
-            words.forEach { word -> addKey(suggestions, word, 1f) { commitSuggestion(word) } }
-            root.addView(suggestions, LinearLayout.LayoutParams(-1, 48))
+            words.forEach { word -> addKey(suggestions, word, 1f, foreground) { commitSuggestion(word) } }
+            content.addView(suggestions, LinearLayout.LayoutParams(-1, scaled(48)))
         }
 
         val activeRows = if (symbols) symbolsRows else letters
         activeRows.forEachIndexed { rowIndex, rowText ->
             val row = LinearLayout(this).apply { gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL }
-            if (rowIndex == 2) addKey(row, "⇧", .9f) { shifted = !shifted; refresh() }
+            if (rowIndex == 2) addKey(row, "⇧", .9f, foreground) { shifted = !shifted; refresh() }
             rowText.forEach { character ->
                 val key = if (shifted && !symbols) character.uppercase() else character.toString()
-                addKey(row, key, 1f) {
-                    commitText(key)
-                    if (shifted && !symbols) { shifted = false; refresh() }
-                }
+                addKey(row, key, 1f, foreground) { commitText(key); if (shifted && !symbols) { shifted = false; refresh() } }
             }
-            if (rowIndex == 2) addKey(row, "⌫", 1.2f) { deleteBackwards() }
-            root.addView(row, LinearLayout.LayoutParams(-1, 52))
+            if (rowIndex == 2) addKey(row, "⌫", 1.2f, foreground) { deleteBackwards() }
+            content.addView(row, LinearLayout.LayoutParams(-1, scaled(52)))
         }
 
         val bottom = LinearLayout(this).apply { gravity = Gravity.CENTER }
-        addKey(bottom, if (symbols) "ABC" else "#+=", .9f) { symbols = !symbols; refresh() }
-        addKey(bottom, ",", .8f) { commitText(",") }
-        addKey(bottom, "space", 4f) { commitText(" ") }
-        addKey(bottom, ".", .8f) { commitText(".") }
-        addKey(bottom, "↵", 1.1f) { sendEditorAction() }
-        root.addView(bottom, LinearLayout.LayoutParams(-1, 58))
+        addKey(bottom, if (symbols) "ABC" else "#+=", .9f, foreground) { symbols = !symbols; refresh() }
+        addKey(bottom, ",", .8f, foreground) { commitText(",") }
+        addKey(bottom, "space", 4f, foreground) { commitText(" ") }
+        addKey(bottom, ".", .8f, foreground) { commitText(".") }
+        addKey(bottom, "↵", 1.1f, foreground) { sendEditorAction() }
+        content.addView(bottom, LinearLayout.LayoutParams(-1, scaled(58)))
         return root
     }
 
-    private fun addKey(row: LinearLayout, label: String, weight: Float, action: () -> Unit) {
+    private fun scaled(value: Int) = (value * sizeScale).roundToInt()
+
+    private fun addKey(row: LinearLayout, label: String, weight: Float, foreground: Int, action: () -> Unit) {
         val button = Button(this).apply {
-            text = label
-            textSize = if (label.length > 1) 11f else 18f
-            setTextColor(Color.WHITE)
-            isAllCaps = false
-            setPadding(0, 0, 0, 0)
-            setOnClickListener { action() }
-            background = GradientDrawable().apply { setColor(Color.rgb(31, 41, 55)); cornerRadius = 12f }
+            text = label; textSize = if (label.length > 1) 11f * sizeScale else 18f * sizeScale; setTextColor(foreground); isAllCaps = false; setPadding(0, 0, 0, 0); setOnClickListener { action() }
+            background = GradientDrawable().apply { setColor(if (darkTheme) Color.rgb(31, 41, 55) else Color.WHITE); cornerRadius = 12f }
         }
-        row.addView(button, LinearLayout.LayoutParams(0, -1, weight).apply { setMargins(3, 3, 3, 3) })
+        row.addView(button, LinearLayout.LayoutParams(0, scaled(if (compact) 44 else 52), weight).apply { setMargins(3, 3, 3, 3) })
     }
 
     private fun commitText(text: String) { currentInputConnection?.commitText(text, 1) }
-    private fun commitSuggestion(word: String) {
-        val connection = currentInputConnection ?: return
-        connection.commitText("$word ", 1)
-    }
-    private fun deleteBackwards() {
-        val connection = currentInputConnection ?: return
-        connection.deleteSurroundingText(1, 0)
-    }
+    private fun commitSuggestion(word: String) { currentInputConnection?.commitText("$word ", 1) }
+    private fun deleteBackwards() { currentInputConnection?.deleteSurroundingText(1, 0) }
     private fun pasteClipboard() {
         val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         val clip: ClipData? = clipboard.primaryClip
@@ -118,10 +119,7 @@ class DepthKeyboardService : InputMethodService() {
         val connection = currentInputConnection ?: return
         val action = currentInputEditorInfo?.imeOptions?.and(EditorInfo.IME_MASK_ACTION) ?: EditorInfo.IME_ACTION_NONE
         if (action != EditorInfo.IME_ACTION_NONE && action != EditorInfo.IME_ACTION_UNSPECIFIED) connection.performEditorAction(action)
-        else {
-            connection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-            connection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
-        }
+        else { connection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)); connection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER)) }
     }
     private fun refresh() { setInputView(buildKeyboard()) }
 }
