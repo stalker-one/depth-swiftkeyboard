@@ -52,7 +52,7 @@ class DepthKeyboardService : InputMethodService() {
         }
         val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(background) }
         val contentWidth = if (oneHanded) resources.displayMetrics.widthPixels * .82f else ViewGroup.LayoutParams.MATCH_PARENT
-        root.addView(content, LinearLayout.LayoutParams(contentWidth.roundToInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
+        root.addView(content, LinearLayout.LayoutParams(contentWidth.toInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
 
         val toolbar = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         addKey(toolbar, "☺", .8f, foreground) { tools = !tools; refresh() }
