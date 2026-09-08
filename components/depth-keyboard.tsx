@@ -31,7 +31,7 @@ import {
   Zap,
 } from 'lucide-react'
 
-const apkDownloadUrl = 'https://github.com/stalker-one/depth-swiftkeyboard/releases/download/Depth-SwiftKeyboard/app-debug.apk'
+const apkDownloadUrl = 'https://github.com/stalker-one/depth-swiftkeyboard/releases/download/Depth-SwiftKeyboard/depth-keyboard.apk'
 
 const letters = [
   ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
