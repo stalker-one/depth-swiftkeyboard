@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:theme="@style/Theme.DepthKeyboard" android:label="Depth Keyboard" android:icon="@drawable/ic_keyboard" android:roundIcon="@drawable/ic_keyboard" android:allowBackup="false" android:supportsRtl="true" android:usesCleartextTraffic="false">
-        <activity android:name=".SettingsActivity" android:exported="true" android:launchMode="singleTop" android:screenOrientation="portrait">
+    <application android:theme="@style/Theme.DepthKeyboard" android:label="Depth Keyboard" android:icon="@drawable/ic_keyboard" android:roundIcon="@drawable/ic_keyboard" android:allowBackup="false" android:supportsRtl="true">
+        <activity android:name=".SettingsActivity" android:exported="true" android:launchMode="singleTop">
             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
         </activity>
-        <service android:name=".DepthKeyboardService" android:label="Depth Keyboard" android:permission="android.permission.BIND_INPUT_METHOD" android:exported="true" android:directBootAware="true">
+        <service android:name=".DepthKeyboardService" android:label="Depth Keyboard" android:permission="android.permission.BIND_INPUT_METHOD" android:exported="true">
             <intent-filter><action android:name="android.view.InputMethod"/></intent-filter>
             <meta-data android:name="android.view.im" android:resource="@xml/method"/>
         </service>
