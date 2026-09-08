@@ -14,6 +14,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import kotlin.math.roundToInt
 
 class DepthKeyboardService : InputMethodService() {
@@ -47,15 +48,16 @@ class DepthKeyboardService : InputMethodService() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = if (oneHanded) Gravity.END else Gravity.CENTER
-            setPadding(8, 8, 8, 12)
+            setPadding(dp(8), dp(8), dp(8), dp(12))
             setBackgroundColor(background)
         }
         val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(background) }
-        val contentWidth = if (oneHanded) resources.displayMetrics.widthPixels * .82f else ViewGroup.LayoutParams.MATCH_PARENT
-        root.addView(content, LinearLayout.LayoutParams(contentWidth.toInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
+        val screenWidthDp = resources.displayMetrics.widthPixels / resources.displayMetrics.density
+        val contentWidth = if (oneHanded) dp(screenWidthDp * .82f) else ViewGroup.LayoutParams.MATCH_PARENT
+        root.addView(content, LinearLayout.LayoutParams(contentWidth, ViewGroup.LayoutParams.WRAP_CONTENT))
 
         val toolbar = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
-        addKey(toolbar, "☺", .8f, foreground) { tools = !tools; refresh() }
+        addKey(toolbar, "☰", .8f, foreground) { tools = !tools; refresh() }
         addKey(toolbar, "📋", .8f, foreground) { pasteClipboard(); refresh() }
         addKey(toolbar, "🌐", .8f, foreground) { spanish = !spanish; refresh() }
         addKey(toolbar, "123", .9f, foreground) { symbols = !symbols; refresh() }
@@ -66,7 +68,18 @@ class DepthKeyboardService : InputMethodService() {
 
         if (tools) {
             val toolRow = LinearLayout(this).apply { gravity = Gravity.CENTER; orientation = LinearLayout.HORIZONTAL }
-            emojis.forEach { emoji -> addKey(toolRow, emoji, 1f, foreground) { commitText(emoji) } }
+            listOf("Emoji", "GIFs", "Tone", "Search", "Translate", "Layout").forEach { tool ->
+                addKey(toolRow, tool, 1f, foreground) {
+                    when (tool) {
+                        "Emoji" -> emojis.take(5).forEach { commitText(it) }
+                        "Tone" -> commitText("Please rewrite this in a friendly tone: ")
+                        "Translate" -> commitText("Translation: ")
+                        "Search" -> commitText("Search: ")
+                        "GIFs" -> Toast.makeText(this, "GIF search can be connected to a provider", Toast.LENGTH_SHORT).show()
+                        "Layout" -> startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    }
+                }
+            }
             content.addView(toolRow, LinearLayout.LayoutParams(-1, scaled(48)))
         } else if (suggestionsEnabled) {
             val suggestions = LinearLayout(this).apply { gravity = Gravity.CENTER }
@@ -104,9 +117,11 @@ class DepthKeyboardService : InputMethodService() {
             text = label; textSize = if (label.length > 1) 11f * sizeScale else 18f * sizeScale; setTextColor(foreground); isAllCaps = false; setPadding(0, 0, 0, 0); setOnClickListener { action() }
             background = GradientDrawable().apply { setColor(if (darkTheme) Color.rgb(31, 41, 55) else Color.WHITE); cornerRadius = 12f }
         }
-        row.addView(button, LinearLayout.LayoutParams(0, scaled(if (compact) 44 else 52), weight).apply { setMargins(3, 3, 3, 3) })
+        row.addView(button, LinearLayout.LayoutParams(0, scaled(if (compact) 44 else 52), weight).apply { setMargins(dp(3), dp(3), dp(3), dp(3)) })
     }
 
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).roundToInt()
+    private fun dp(value: Float): Int = (value * resources.displayMetrics.density).roundToInt()
     private fun commitText(text: String) { currentInputConnection?.commitText(text, 1) }
     private fun commitSuggestion(word: String) { currentInputConnection?.commitText("$word ", 1) }
     private fun deleteBackwards() { currentInputConnection?.deleteSurroundingText(1, 0) }
