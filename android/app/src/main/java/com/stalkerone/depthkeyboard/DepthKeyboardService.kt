@@ -49,7 +49,6 @@ class DepthKeyboardService : InputMethodService() {
             setTextColor(Color.rgb(148, 163, 184)); textSize = 11f; gravity = Gravity.CENTER
         }
         toolbar.addView(language, LinearLayout.LayoutParams(0, 42, 1f))
-        addKey(toolbar, "🎙", .8f) { requestShowSelf(0) }
         root.addView(toolbar, LinearLayout.LayoutParams(-1, 48))
 
         if (tools) {

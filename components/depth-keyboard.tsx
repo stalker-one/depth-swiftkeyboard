@@ -6,7 +6,6 @@ import {
   Download,
   Globe2,
   Languages,
-  Mic,
   Palette,
   ShieldCheck,
   Sparkles,
@@ -24,7 +23,7 @@ const features = [
   { icon: Clipboard, title: 'Clipboard shortcuts', text: 'Keep useful phrases close and paste them with one tap when you need them.' },
   { icon: Languages, title: 'Multilingual typing', text: 'Switch between languages quickly while you write and stay in your flow.' },
   { icon: Palette, title: 'Personal themes', text: 'Choose Aurora, Midnight, or Sand and make the keyboard feel like yours.' },
-  { icon: Mic, title: 'Voice input ready', text: 'Use Android voice input from the keyboard toolbar when your hands are busy.' },
+  { icon: Zap, title: 'Quick controls', text: 'Keep language, symbols, emoji, and clipboard controls one tap away.' },
 ]
 
 const steps = [
