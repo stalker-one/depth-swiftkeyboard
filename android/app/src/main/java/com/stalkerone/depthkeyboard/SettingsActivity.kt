@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -39,7 +40,11 @@ class SettingsActivity : Activity() {
         })
         root.addView(Button(this).apply {
             text = "Choose keyboard"
-            setOnClickListener { (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker() }
+            setOnClickListener {
+                val manager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                manager.showInputMethodPicker()
+                Toast.makeText(this@SettingsActivity, "Choose Depth Keyboard from the picker", Toast.LENGTH_SHORT).show()
+            }
         })
         setContentView(root)
         updateStatus()
