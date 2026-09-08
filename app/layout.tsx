@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Depth Keyboard — Your flow, your way',
+  description: 'A customizable, intelligent keyboard experience designed around the way you type.',
   generator: 'v0.app',
   icons: {
     icon: [
