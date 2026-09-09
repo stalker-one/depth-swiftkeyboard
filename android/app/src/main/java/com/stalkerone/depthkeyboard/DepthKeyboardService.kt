@@ -57,7 +57,7 @@ class DepthKeyboardService : InputMethodService() {
             if (index == 2) key(keyRow, if (symbols) "ABC" else if (capsLock) "⇪" else "⇧", 1f, theme.text) { if (symbols) symbols = false else if (shift) { capsLock = true; shift = false } else if (capsLock) { capsLock = false } else shift = true; refresh() }
             row.forEach { ch ->
                 val value = if ((shift || capsLock) && !symbols) ch.uppercaseChar().toString() else ch.toString()
-                key(keyRow, value, 1f, theme.text, { commit(value); if (shift && !capsLock && !symbols) { shift = false; refresh() } }, { anchor -> showAccents(anchor, ch) })
+                key(keyRow, value, 1f, theme.text, { anchor -> showAccents(anchor, ch) }) { commit(value); if (shift && !capsLock && !symbols) { shift = false; refresh() } }
             }
             if (index == 2) key(keyRow, "⌫", 1.2f, theme.text) { backspace() }
             box.addView(keyRow, LinearLayout.LayoutParams(-1, scaled(if (compact) 43 else 51)))
@@ -115,7 +115,7 @@ class DepthKeyboardService : InputMethodService() {
         box.addView(row, LinearLayout.LayoutParams(-1, scaled(46)))
     }
 
-    private fun key(row: LinearLayout, text: String, weight: Float, fg: Int, action: () -> Unit, longAction: ((View) -> Unit)? = null) {
+    private fun key(row: LinearLayout, text: String, weight: Float, fg: Int, longAction: ((View) -> Unit)? = null, action: () -> Unit) {
         val theme = ThemeCatalog.current(this)
         val button = Button(this).apply { this.text = text; textSize = if (text.length > 1) 10f else 18f; setTextColor(fg); isAllCaps = false; setPadding(0, 0, 0, 0); minHeight = 0; minWidth = 0; background = GradientDrawable().apply { setColor(theme.key); cornerRadius = dp(9).toFloat() }; setOnClickListener { action() }; setOnLongClickListener { longAction?.invoke(this); longAction != null } }
         row.addView(button, LinearLayout.LayoutParams(0, scaled(if (text.length > 1) 42 else if (compact) 43 else 51), weight).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) })
