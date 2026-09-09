@@ -15,6 +15,7 @@ import kotlin.math.roundToInt
 
 class DepthKeyboardService : InputMethodService() {
     private var shift = false
+    private var capsLock = false
     private var symbols = false
     private var tools = false
     private var clipboardMode = false
@@ -27,7 +28,7 @@ class DepthKeyboardService : InputMethodService() {
 
     override fun onCreate() { super.onCreate(); model = TypingModel(this) }
     override fun onCreateInputView(): View = build()
-    override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) { super.onStartInput(attribute, restarting); shift = false; symbols = false; tools = false; clipboardMode = false }
+    override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) { super.onStartInput(attribute, restarting); shift = false; capsLock = false; symbols = false; tools = false; clipboardMode = false }
     override fun onEvaluateInputViewShown() = true
 
     private fun build(): View {
@@ -53,10 +54,10 @@ class DepthKeyboardService : InputMethodService() {
         val rows = if (symbols) listOf("1234567890", "@#$%&*+-=", "()[]{}!?/") else KeyboardLayouts.rows(currentLanguage, layout)
         rows.forEachIndexed { index, row ->
             val keyRow = LinearLayout(this).apply { gravity = Gravity.CENTER }
-            if (index == 2) key(keyRow, if (symbols) "ABC" else "⇧", 1f, theme.text) { if (symbols) symbols = false else shift = !shift; refresh() }
+            if (index == 2) key(keyRow, if (symbols) "ABC" else if (capsLock) "⇪" else "⇧", 1f, theme.text) { if (symbols) symbols = false else if (shift) { capsLock = true; shift = false } else if (capsLock) { capsLock = false } else shift = true; refresh() }
             row.forEach { ch ->
-                val value = if (shift && !symbols) ch.uppercaseChar().toString() else ch.toString()
-                key(keyRow, value, 1f, theme.text) { commit(value); if (shift && !symbols) { shift = false; refresh() } }
+                val value = if ((shift || capsLock) && !symbols) ch.uppercaseChar().toString() else ch.toString()
+                key(keyRow, value, 1f, theme.text, { commit(value); if (shift && !capsLock && !symbols) { shift = false; refresh() } }, { anchor -> showAccents(anchor, ch) })
             }
             if (index == 2) key(keyRow, "⌫", 1.2f, theme.text) { backspace() }
             box.addView(keyRow, LinearLayout.LayoutParams(-1, scaled(if (compact) 43 else 51)))
@@ -114,20 +115,21 @@ class DepthKeyboardService : InputMethodService() {
         box.addView(row, LinearLayout.LayoutParams(-1, scaled(46)))
     }
 
-    private fun key(row: LinearLayout, text: String, weight: Float, fg: Int, action: () -> Unit) {
+    private fun key(row: LinearLayout, text: String, weight: Float, fg: Int, action: () -> Unit, longAction: ((View) -> Unit)? = null) {
         val theme = ThemeCatalog.current(this)
-        val button = Button(this).apply { this.text = text; textSize = if (text.length > 1) 10f else 18f; setTextColor(fg); isAllCaps = false; setPadding(0, 0, 0, 0); minHeight = 0; minWidth = 0; background = GradientDrawable().apply { setColor(theme.key); cornerRadius = dp(9).toFloat() }; setOnClickListener { action() } }
+        val button = Button(this).apply { this.text = text; textSize = if (text.length > 1) 10f else 18f; setTextColor(fg); isAllCaps = false; setPadding(0, 0, 0, 0); minHeight = 0; minWidth = 0; background = GradientDrawable().apply { setColor(theme.key); cornerRadius = dp(9).toFloat() }; setOnClickListener { action() }; setOnLongClickListener { longAction?.invoke(this); longAction != null } }
         row.addView(button, LinearLayout.LayoutParams(0, scaled(if (text.length > 1) 42 else if (compact) 43 else 51), weight).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) })
     }
 
     private fun commit(text: String) { currentInputConnection?.commitText(text, 1); ClipboardStore(this).add(text); if (!p.getBoolean(SettingsActivity.KEY_INCOGNITO, false)) model.learn(text) }
     private fun paste() { ClipboardStore(this).items().firstOrNull()?.let { commit(it) } }
-    private fun space() { if (currentInputConnection?.getTextBeforeCursor(2, 0)?.toString() == "  ") { currentInputConnection?.deleteSurroundingText(2, 0); commit(". ") } else commit(" ") }
+    private fun space() { if (p.getBoolean(SettingsActivity.KEY_DOUBLE_SPACE, true) && currentInputConnection?.getTextBeforeCursor(2, 0)?.toString() == "  ") { currentInputConnection?.deleteSurroundingText(2, 0); commit(". ") } else commit(" ") }
     private fun backspace() { val c = currentInputConnection ?: return; val before = c.getTextBeforeCursor(80, 0)?.toString().orEmpty(); val count = if (before.endsWith(" ")) 1 else before.takeLastWhile { !it.isWhitespace() }.length.coerceAtLeast(1); c.deleteSurroundingText(count, 0) }
     private fun enter() { val c = currentInputConnection ?: return; val action = currentInputEditorInfo?.imeOptions?.and(EditorInfo.IME_MASK_ACTION) ?: 0; if (action != 0) c.performEditorAction(action) else { c.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)); c.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER)) } }
     private fun ai() { val text = currentInputConnection?.getTextBeforeCursor(500, 0)?.toString().orEmpty(); if (text.isBlank()) Toast.makeText(this, "Type text first", Toast.LENGTH_SHORT).show() else commit(FeatureEngine.tonePrompt("professional", text)) }
     private fun search() { val query = currentInputConnection?.getTextBeforeCursor(150, 0)?.toString().orEmpty(); startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://www.google.com/search?q=" + android.net.Uri.encode(query))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
     private fun language() { val languages = KeyboardLayouts.languages; val old = p.getString(SettingsActivity.KEY_LANGUAGE, languages[0]) ?: languages[0]; p.edit().putString(SettingsActivity.KEY_LANGUAGE, languages[(languages.indexOf(old) + 1).mod(languages.size)]).apply(); refresh() }
+    private fun showAccents(anchor: View, base: Char) { if (!p.getBoolean(SettingsActivity.KEY_LONG_PRESS, true)) return; val accents = KeyboardLayouts.accents(base); if (accents.isEmpty()) { Toast.makeText(this, "No alternate characters", Toast.LENGTH_SHORT).show(); return }; commit(accents.first()) }
     private fun refresh() { setInputView(build()) }
     private fun scaled(value: Int) = dp(value * scale * height)
     private fun dp(value: Int) = (value * resources.displayMetrics.density).roundToInt()
