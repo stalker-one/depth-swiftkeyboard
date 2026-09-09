@@ -222,4 +222,5 @@ class DepthKeyboardService : InputMethodService() {
     private fun refresh() { setInputView(build()) }
     private fun scaled(value: Int) = dp(value * scale * height)
     private fun dp(value: Int) = (value * resources.displayMetrics.density).roundToInt()
+    private fun dp(value: Float) = (value * resources.displayMetrics.density).roundToInt()
 }
