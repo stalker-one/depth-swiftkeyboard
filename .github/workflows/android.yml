@@ -80,7 +80,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release and APK
-        if: github.ref == 'refs/heads/master'
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.name }}
