@@ -2,10 +2,11 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import './home-modern.css'
+import './modern-home-v2.css'
 
 export const metadata: Metadata = {
-  title: 'Depth Keyboard — Your flow, your way',
-  description: 'A modern, customizable AI-ready keyboard experience designed around the way you type.',
+  title: 'Depth Keyboard — Your keyboard. Your intelligence.',
+  description: 'A modern, private-first Android keyboard with AI assistance, multilingual typing, rich input and powerful personalization.',
   generator: 'Depth Labs',
   icons: {
     icon: [
@@ -18,11 +19,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'light',
+  themeColor: '#f6f8fc',
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
