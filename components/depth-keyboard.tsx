@@ -1,72 +1,121 @@
 'use client'
 
 import {
+  ArrowRight,
   Check,
   Clipboard,
   Download,
   Globe2,
   Languages,
+  MessageCircle,
   Palette,
+  Search,
   ShieldCheck,
   Sparkles,
   Sticker,
-  SunMoon,
   WandSparkles,
   Zap,
 } from 'lucide-react'
 
 const apkDownloadUrl = 'https://github.com/stalker-one/depth-swiftkeyboard/releases/download/Depth-SwiftKeyboard/depth-keyboard.apk'
 
-const features = [
-  { icon: WandSparkles, title: 'Smart suggestions', text: 'Prediction-ready typing with autocorrect that helps without getting in your way.' },
-  { icon: Sticker, title: 'Emoji, GIFs & stickers', text: 'Express yourself faster with a rich toolbar built for everyday conversations.' },
-  { icon: Clipboard, title: 'Clipboard shortcuts', text: 'Keep useful phrases close and paste them with one tap when you need them.' },
-  { icon: Languages, title: 'Multilingual typing', text: 'Switch between languages quickly while you write and stay in your flow.' },
-  { icon: Palette, title: 'Personal themes', text: 'Choose Aurora, Midnight, or Sand and make the keyboard feel like yours.' },
-  { icon: Zap, title: 'Quick controls', text: 'Keep language, symbols, emoji, and clipboard controls one tap away.' },
+const capabilities = [
+  ['01', 'AI Assist', 'Rewrite, polish, brainstorm and compose without leaving the app.'],
+  ['02', 'Flow Typing', 'Swipe, predict and complete words at the speed of your thoughts.'],
+  ['03', 'Voice', 'Dictate naturally with fast voice-to-text input.'],
+  ['04', 'Languages', 'Switch languages and layouts without breaking your flow.'],
+  ['05', 'Rich Input', 'Emoji, GIFs, stickers, search and clipboard in one toolbar.'],
+  ['06', 'Privacy', 'Local-first controls with Incognito and learning preferences.'],
 ]
 
-const steps = [
-  ['Install', 'Download the APK and open it on your Android phone.'],
-  ['Enable', 'Open the app, tap Enable Depth Keyboard, then allow it in Android Settings.'],
-  ['Choose', 'Tap Choose keyboard and select Depth Keyboard as your active input method.'],
-]
+const languages = ['English', 'اردو', 'العربية', 'Español', 'Deutsch', 'Français']
 
 export default function DepthKeyboard() {
   return (
-    <main className="depth-app feature-home">
-      <header className="topbar">
-        <div className="brand"><div className="brand-mark"><Zap size={17} /></div><div><p className="eyebrow">DEPTH LABS</p><h1>Depth Keyboard</h1></div></div>
-        <div className="top-actions"><a className="header-download" href={apkDownloadUrl} download="depth-keyboard.apk"><Download size={15} /> Get the APK</a><div className="avatar" aria-label="Depth Keyboard">DK</div></div>
+    <main className="depth-app feature-home modern-home">
+      <div className="ambient ambient-one" />
+      <div className="ambient ambient-two" />
+
+      <header className="modern-nav">
+        <a className="modern-brand" href="#top" aria-label="Depth Keyboard home">
+          <span className="brand-mark"><Zap size={18} /></span>
+          <span><b>DEPTH</b><small>KEYBOARD</small></span>
+        </a>
+        <nav className="modern-links" aria-label="Main navigation">
+          <a href="#features">Features</a><a href="#ai">AI</a><a href="#privacy">Privacy</a><a href="#download">Download</a>
+        </nav>
+        <a className="nav-cta" href={apkDownloadUrl} download="depth-keyboard.apk"><Download size={15} /> Get APK</a>
       </header>
 
-      <section className="hero-section">
-        <div className="hero-copy">
-          <p className="eyebrow">A KEYBOARD MADE FOR YOUR FLOW</p>
-          <h2>Type faster.<br /><em>Stay in the moment.</em></h2>
-          <p className="hero-text">Depth Keyboard brings thoughtful predictions, expressive tools, and a calm, personal typing experience to Android.</p>
-          <div className="hero-actions"><a className="download-button hero-button" href={apkDownloadUrl} download="depth-keyboard.apk"><Download size={17} /> Download for Android</a><a className="release-link" href="https://github.com/stalker-one/depth-swiftkeyboard/releases/tag/Depth-SwiftKeyboard">View release notes <span>↗</span></a></div>
-          <div className="trust-row"><span><ShieldCheck size={15} /> On-device first</span><span><Check size={15} /> Free to try</span><span><Globe2 size={15} /> Android 8+</span></div>
+      <section id="top" className="modern-hero">
+        <div className="hero-copy modern-hero-copy">
+          <div className="status-badge"><span /> Built for Android · 8+</div>
+          <h1>Your keyboard.<br /><span>Your intelligence.</span></h1>
+          <p>Depth is a modern, private-first keyboard built around how people actually communicate — fast typing, AI assistance, rich input and total control.</p>
+          <div className="hero-actions">
+            <a className="download-button hero-button" href={apkDownloadUrl} download="depth-keyboard.apk"><Download size={17} /> Download for Android <ArrowRight size={16} /></a>
+            <a className="text-cta" href="#features">Explore features <ArrowRight size={15} /></a>
+          </div>
+          <div className="hero-proof"><span><ShieldCheck size={14} /> Privacy controls</span><span><Sparkles size={14} /> AI-ready</span><span><Globe2 size={14} /> Multilingual</span></div>
         </div>
-        <div className="hero-art" aria-label="Abstract Depth Keyboard feature illustration">
-          <div className="float-chip chip-ai"><Sparkles size={14} /> Smart AI-ready typing</div><div className="float-chip chip-emoji">🔥 <span>Favorites learned</span></div>
-          <div className="art-glow" /><div className="art-panel"><div className="art-top"><span className="art-dot" /><span className="art-dot" /><span className="art-dot" /><span>Depth Keyboard</span></div><div className="art-suggestion"><strong>Beautiful</strong><span>brilliant</span><span>better</span><Sparkles size={14} /></div><div className="art-keys">{['q','w','e','r','t','y','u','i','o','p','a','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'].map((key) => <span key={key}>{key}</span>)}</div><div className="art-bottom"><span>☺</span><span>🌐</span><b>space</b><span>⌫</span><i>↵</i></div></div>
+
+        <div className="hero-device" aria-label="Depth Keyboard interactive preview">
+          <div className="device-glow" />
+          <div className="device-card">
+            <div className="device-camera" />
+            <div className="device-screen">
+              <div className="screen-status"><span>9:41</span><span>● ● ▰</span></div>
+              <div className="chat-window">
+                <div className="chat-label">MESSAGES <span>today</span></div>
+                <div className="bubble bubble-left">Hey! Can you send the details?</div>
+                <div className="bubble bubble-right">Absolutely — I’ll send them shortly.</div>
+                <div className="compose-line">Write a reply<span className="cursor" /></div>
+              </div>
+              <div className="keyboard-preview">
+                <div className="ai-row"><b>Absolutely</b><span>Sure</span><span>Of course</span><Sparkles size={14} /></div>
+                <div className="key-grid">{'qwertyuiopasdfghjklzxcvbnm'.split('').map((key) => <i key={key}>{key}</i>)}</div>
+                <div className="space-row"><i>☺</i><i>🌐</i><b>space</b><i>⌫</i><i className="enter">↵</i></div>
+              </div>
+            </div>
+          </div>
+          <div className="floating-stat stat-one"><Sparkles size={15} /><b>AI Compose</b><small>Ready when you are</small></div>
+          <div className="floating-stat stat-two"><span className="live-dot" /><b>Local first</b><small>Your controls, your data</small></div>
         </div>
       </section>
 
-      <div className="capability-rail" aria-label="Keyboard capabilities"><div className="capability-track">{['Tap to type', 'Smart suggestions', 'Emoji tools', 'Clipboard', 'Multilingual typing', 'Personal themes', 'Quick controls', 'Tap to type', 'Smart suggestions', 'Emoji tools', 'Clipboard', 'Multilingual typing'].map((item, index) => <span key={`${item}-${index}`}>{item}<b>•</b></span>)}</div></div>
+      <section className="marquee-section" aria-label="Depth capabilities">
+        <div className="marquee-track">{['AI ASSIST', 'FLOW TYPING', 'VOICE', '700+ LANGUAGE GOAL', 'EMOJI', 'GIFS', 'STICKERS', 'CLIPBOARD', 'TRANSLATOR', 'SEARCH', 'THEMES', 'PRIVACY'].map((item, i) => <span key={`${item}-${i}`}>{item}<b>✦</b></span>)}</div>
+      </section>
 
-      <section className="feature-section"><div className="section-heading feature-heading"><div><p className="eyebrow">EVERYTHING YOU NEED</p><h2>More than a keyboard.</h2></div><p>Built around the little things that make typing feel effortless.</p></div><div className="feature-grid">{features.map(({ icon: Icon, title, text }) => <article className="feature-card" key={title}><div className="feature-icon"><Icon size={18} /></div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
+      <section id="features" className="modern-section features-modern">
+        <div className="section-intro"><span className="section-number">01</span><div><p className="eyebrow">THE TOOLKIT</p><h2>Everything you need.<br /><em>Nothing in the way.</em></h2></div><p>One keyboard that keeps your everyday tools close, from the first letter to the final send.</p></div>
+        <div className="capability-grid">{capabilities.map(([num, title, text]) => <article className="capability-card" key={num}><span className="cap-num">{num}</span><div className="cap-icon">{num === '01' ? <WandSparkles /> : num === '02' ? <Zap /> : num === '03' ? <MessageCircle /> : num === '04' ? <Languages /> : num === '05' ? <Sticker /> : <ShieldCheck />}</div><h3>{title}</h3><p>{text}</p><ArrowRight className="cap-arrow" size={18} /></article>)}</div>
+      </section>
 
-  <section className="spotlight-section"><div className="spotlight-copy"><p className="eyebrow">COMPOSE WITH CONFIDENCE</p><h2>From rough thought to ready-to-send.</h2><p>Depth is designed for the whole conversation: draft, rewrite, react, and send without leaving the app you are using.</p><div className="spotlight-pills"><span><WandSparkles size={14} /> Rewrite tones</span><span><Sparkles size={14} /> Smart compose</span><span><Sticker size={14} /> Rich content</span></div></div><div className="compose-card"><div className="compose-label">COMPOSE ASSISTANT <Sparkles size={13} /></div><p className="compose-draft">Can you send me the details when you have a moment?</p><div className="compose-actions"><button>Friendly</button><button>Professional</button><button>Shorter</button></div><div className="compose-result">Absolutely — send the details whenever you’re ready.</div></div></section>
+      <section id="ai" className="ai-modern modern-section">
+        <div className="ai-copy"><span className="section-number">02</span><p className="eyebrow">DEPTH AI</p><h2>Think it.<br /><em>Say it better.</em></h2><p>Turn rough thoughts into clear messages. Rewrite tone, shorten a paragraph, make it professional, or start from an idea — right above the keyboard.</p><div className="ai-list"><span><Check /> Professional</span><span><Check /> Casual</span><span><Check /> Polite</span><span><Check /> Social post</span></div></div>
+        <div className="ai-window">
+          <div className="ai-window-top"><span><Sparkles size={15} /> DEPTH AI</span><small>Compose assistant</small></div>
+          <div className="ai-prompt"><small>YOUR DRAFT</small><p>can you send me the project details when you get time</p></div>
+          <div className="ai-actions"><button>Professional</button><button>Friendly</button><button>Shorter</button></div>
+          <div className="ai-answer"><span><Sparkles size={14} /> READY</span><p>Could you please send me the project details when you have a moment?</p><button><Clipboard size={14} /> Copy</button></div>
+        </div>
+      </section>
 
-      <section className="control-center"><div className="control-copy"><p className="eyebrow">YOUR CONTROL CENTER</p><h2>Shape every key to fit your hands.</h2><p>Resize the keyboard, switch to one-handed mode, choose a theme, turn suggestions on or off, and keep private typing private.</p><a className="release-link" href={apkDownloadUrl}>Get the latest Android build <span>↗</span></a></div><div className="control-orbit"><div className="orbit-ring ring-one" /><div className="orbit-ring ring-two" /><div className="control-card"><strong>Keyboard settings</strong><div className="control-slider"><span>Size</span><i><b /></i><em>110%</em></div><div className="control-toggles"><span>One-handed <b>ON</b></span><span>Suggestions <b>ON</b></span><span>Incognito <b>OFF</b></span></div></div></div></section>
+      <section className="tools-modern modern-section">
+        <div className="tools-visual"><div className="tool-orbit orbit-a" /><div className="tool-orbit orbit-b" /><div className="tool-center"><Sparkles size={30} /></div><div className="tool-node node-a"><Search /></div><div className="tool-node node-b"><Languages /></div><div className="tool-node node-c"><Clipboard /></div><div className="tool-node node-d"><Sticker /></div></div>
+        <div className="tools-copy"><span className="section-number">03</span><p className="eyebrow">ONE TAP AWAY</p><h2>Your whole internet life, <em>from the keyboard.</em></h2><p>Search the web, translate, find a GIF, grab a saved phrase or drop an emoji without jumping between apps.</p><div className="tool-pills"><span><Search /> Search</span><span><Languages /> Translate</span><span><Clipboard /> Clipboard</span><span><Sticker /> GIFs & stickers</span></div></div>
+      </section>
 
-      <section className="personal-section"><div><p className="eyebrow">MAKE IT YOURS</p><h2>Your style. Your languages. Your privacy.</h2><p>Switch themes, choose your languages, and tune sound or haptic feedback. Your typing stays personal and your controls stay close.</p></div><div className="theme-stack"><div className="mini-theme aurora-mini"><SunMoon size={16} /><span>Aurora</span><small>Soft and focused</small></div><div className="mini-theme midnight-mini"><SunMoon size={16} /><span>Midnight</span><small>Calm after dark</small></div><div className="mini-theme sand-mini"><SunMoon size={16} /><span>Sand</span><small>Warm and easy</small></div></div></section>
+      <section id="privacy" className="privacy-modern modern-section">
+        <div className="privacy-panel"><div className="privacy-icon"><ShieldCheck size={25} /></div><div><p className="eyebrow">04 · PRIVATE BY DESIGN</p><h2>Your typing belongs to you.</h2><p>Use Incognito, control personalization, manage learned language data and decide what ever leaves your device. Cloud sync can stay optional.</p></div><div className="privacy-points"><span><Check /> Incognito mode</span><span><Check /> Learning controls</span><span><Check /> Backup & sync controls</span><span><Check /> Data management</span></div></div>
+      </section>
 
-      <section className="install-section"><div className="section-heading feature-heading"><div><p className="eyebrow">START TYPING</p><h2>Ready in three steps.</h2></div><a className="download-button" href={apkDownloadUrl} download="depth-keyboard.apk"><Download size={16} /> Download APK</a></div><div className="steps-grid">{steps.map(([title, text], index) => <div className="step" key={title}><span>{index + 1}</span><h3>{title}</h3><p>{text}</p></div>)}</div></section>
+      <section className="languages-modern modern-section"><div className="section-intro"><span className="section-number">05</span><div><p className="eyebrow">YOUR LANGUAGES</p><h2>Speak your way.</h2></div><p>Designed for multilingual conversations with fast switching, language-specific predictions and flexible layouts.</p></div><div className="language-cloud">{languages.map((language, i) => <span className={i === 0 ? 'language-active' : ''} key={language}>{language}</span>)}<span>＋ Add language</span></div></section>
 
-      <footer className="site-footer"><span><Zap size={14} /> Depth Keyboard</span><span>Your data stays on your device.</span><a href="https://github.com/stalker-one/depth-swiftkeyboard">Open source on GitHub ↗</a></footer>
+      <section id="download" className="download-modern modern-section"><div><p className="eyebrow">06 · READY WHEN YOU ARE</p><h2>Make your keyboard<br /><em>feel like yours.</em></h2><p>Download the latest Android build and start shaping your typing experience.</p></div><div className="download-box"><div className="download-mark"><Zap size={24} /></div><div><b>Depth Keyboard</b><small>Android 8+ · Latest APK</small></div><a href={apkDownloadUrl} download="depth-keyboard.apk"><Download size={17} /> Download</a></div></section>
+
+      <footer className="modern-footer"><div className="modern-brand"><span className="brand-mark"><Zap size={16} /></span><span><b>DEPTH</b><small>KEYBOARD</small></span></div><p>Built for your flow. Designed for your control.</p><a href="https://github.com/stalker-one/depth-swiftkeyboard">GitHub <ArrowRight size={14} /></a></footer>
     </main>
   )
 }
