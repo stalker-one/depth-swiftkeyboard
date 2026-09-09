@@ -3,7 +3,6 @@ name: Build and Release Android APK
 on:
   push:
     branches: [master]
-    tags: ['v*']
   pull_request:
 
 permissions:
@@ -37,18 +36,24 @@ jobs:
           gradle assembleDebug
           cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/depth-keyboard.apk
 
-      - name: Prepare release metadata
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Read app version
+        id: version
         run: |
           VERSION_CODE=$(grep -o 'versionCode = [0-9]*' app/build.gradle.kts | grep -o '[0-9]*')
           VERSION_NAME=$(grep -o 'versionName = "[^"]*"' app/build.gradle.kts | cut -d'"' -f2)
+          echo "code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+          echo "name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare release metadata
+        run: |
           {
             echo "# Depth Keyboard Android"
             echo
-            echo "versionCode: ${VERSION_CODE}"
-            echo "versionName: ${VERSION_NAME}"
+            echo "versionCode: ${{ steps.version.outputs.code }}"
+            echo "versionName: ${{ steps.version.outputs.name }}"
             echo
             echo "This release is used by the in-app required update system."
+            echo "The APK asset is named depth-keyboard.apk."
           } > release-notes.md
 
       - name: Upload APK artifact
@@ -57,10 +62,13 @@ jobs:
           name: depth-keyboard-apk
           path: android/app/build/outputs/apk/debug/depth-keyboard.apk
 
-      - name: Create GitHub release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publish GitHub Release and APK
+        if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.version.outputs.name }}
+          name: Depth Keyboard ${{ steps.version.outputs.name }}
+          target_commitish: ${{ github.sha }}
           body_path: android/release-notes.md
           generate_release_notes: true
           files: android/app/build/outputs/apk/debug/depth-keyboard.apk
