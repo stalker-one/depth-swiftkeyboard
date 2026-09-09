@@ -13,8 +13,12 @@ object ThemeCatalog {
         Theme("violet", Color.rgb(39,25,60), Color.rgb(72,44,105), Color.WHITE)
     )
     fun current(context: Context): Theme {
-        val id = context.getSharedPreferences(SettingsActivity.PREFS, Context.MODE_PRIVATE)
-            .getString("theme_id", "midnight")
+        val prefs = context.getSharedPreferences(SettingsActivity.PREFS, Context.MODE_PRIVATE)
+        val id = prefs.getString("theme_id", "midnight")
+        if (id == "custom") {
+            fun color(key: String, fallback: Int) = runCatching { Color.parseColor(prefs.getString(key, null) ?: "") }.getOrDefault(fallback)
+            return Theme("custom", color("custom_bg", themes.first().background), color("custom_key", themes.first().key), color("custom_text", themes.first().text))
+        }
         return themes.firstOrNull { it.id == id } ?: themes.first()
     }
 }

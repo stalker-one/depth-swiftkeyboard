@@ -6,6 +6,7 @@ import android.inputmethodservice.InputMethodService
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
+import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.LinearLayout
@@ -62,7 +63,7 @@ class DepthKeyboardService : InputMethodService() {
                 val value = if ((shift || capsLock) && !symbols) ch.uppercaseChar().toString() else ch.toString()
                 key(keyRow, value, 1f, theme.text, { anchor -> showAccents(anchor, ch) }) { commit(value); if (shift && !capsLock && !symbols) { shift = false; refresh() } }
             }
-            if (index == rows.lastIndex) key(keyRow, "⌫", 1.2f, theme.text) { backspace() }
+            if (index == rows.lastIndex) swipeDeleteKey(keyRow, theme.text)
             box.addView(keyRow, LinearLayout.LayoutParams(-1, scaled(if (compact) 43 else 51)))
         }
         val bottom = LinearLayout(this).apply { gravity = Gravity.CENTER }
@@ -79,7 +80,7 @@ class DepthKeyboardService : InputMethodService() {
         val text = currentInputConnection?.getTextBeforeCursor(80, 0)?.toString().orEmpty()
         val prefix = text.takeLastWhile { it.isLetter() }
         val previous = text.dropLast(prefix.length).trimEnd().substringAfterLast(' ')
-        val words = (model.suggestions(prefix, previous) + FeatureEngine.predictions(previous)).distinct().take(3).ifEmpty { listOf("the", "and", "you") }
+        val words = (model.suggestions(prefix, previous) + LanguageDictionaries.words(currentLanguage(), prefix) + FeatureEngine.predictions(previous)).distinct().take(3).ifEmpty { listOf("the", "and", "you") }
         val row = LinearLayout(this).apply { gravity = Gravity.CENTER }
         words.forEach { word -> key(row, word, 1f, fg) { commit(word + " ") } }
         box.addView(row, LinearLayout.LayoutParams(-1, scaled(44)))
@@ -130,15 +131,34 @@ class DepthKeyboardService : InputMethodService() {
         row.addView(button, LinearLayout.LayoutParams(0, scaled(if (text.length > 1) 42 else if (compact) 43 else 51), weight).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) })
     }
 
+    private fun swipeDeleteKey(row: LinearLayout, fg: Int) {
+        val theme = ThemeCatalog.current(this)
+        var startX = 0f
+        val button = Button(this).apply {
+            text = "⌫"; textSize = 18f; setTextColor(fg); isAllCaps = false; setPadding(0, 0, 0, 0); minHeight = 0; minWidth = 0
+            background = GradientDrawable().apply { setColor(theme.key); cornerRadius = dp(9).toFloat() }
+            setOnTouchListener { _, event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> { startX = event.x; true }
+                    MotionEvent.ACTION_UP -> { if (startX - event.x > dp(42)) deleteWord(); else backspace(); true }
+                    else -> true
+                }
+            }
+        }
+        row.addView(button, LinearLayout.LayoutParams(0, scaled(if (compact) 43 else 51), 1.2f).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) })
+    }
+
     private fun commit(text: String) { currentInputConnection?.commitText(text, 1); if (!p.getBoolean(SettingsActivity.KEY_INCOGNITO, false)) { ClipboardStore(this).add(text); model.learn(text) } }
     private fun paste() { ClipboardStore(this).items().firstOrNull()?.let { commit(it) } }
     private fun space() { if (p.getBoolean(SettingsActivity.KEY_DOUBLE_SPACE, true) && currentInputConnection?.getTextBeforeCursor(2, 0)?.toString() == "  ") { currentInputConnection?.deleteSurroundingText(2, 0); commit(". ") } else if (p.getBoolean(SettingsActivity.KEY_AUTOCORRECT, true)) { autocorrectAndSpace() } else commit(" ") }
     private fun autocorrectAndSpace() { val c = currentInputConnection ?: return; val before = c.getTextBeforeCursor(80, 0)?.toString().orEmpty(); val word = before.takeLastWhile { !it.isWhitespace() }; val corrected = FeatureEngine.autocorrect(word); if (corrected != word && word.isNotEmpty()) { c.deleteSurroundingText(word.length, 0); commit(corrected) }; commit(" ") }
     private fun backspace() { val c = currentInputConnection ?: return; val before = c.getTextBeforeCursor(80, 0)?.toString().orEmpty(); val count = if (before.endsWith(" ")) 1 else before.takeLastWhile { !it.isWhitespace() }.length.coerceAtLeast(1); c.deleteSurroundingText(count, 0) }
+    private fun deleteWord() { val c = currentInputConnection ?: return; val before = c.getTextBeforeCursor(80, 0)?.toString().orEmpty(); val count = before.takeLastWhile { !it.isWhitespace() }.length.coerceAtLeast(1); c.deleteSurroundingText(count, 0) }
     private fun enter() { val c = currentInputConnection ?: return; val action = currentInputEditorInfo?.imeOptions?.and(EditorInfo.IME_MASK_ACTION) ?: 0; if (action != 0) c.performEditorAction(action) else { c.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)); c.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER)) } }
     private fun ai() { val text = currentInputConnection?.getTextBeforeCursor(500, 0)?.toString().orEmpty(); if (text.isBlank()) Toast.makeText(this, "Type text first", Toast.LENGTH_SHORT).show() else commit(FeatureEngine.tonePrompt("professional", text)) }
     private fun search() { val query = currentInputConnection?.getTextBeforeCursor(150, 0)?.toString().orEmpty(); startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://www.google.com/search?q=" + android.net.Uri.encode(query))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
     private fun language() { val languages = KeyboardLayouts.languages; val old = p.getString(SettingsActivity.KEY_LANGUAGE, languages[0]) ?: languages[0]; p.edit().putString(SettingsActivity.KEY_LANGUAGE, languages[(languages.indexOf(old) + 1).mod(languages.size)]).apply(); refresh() }
+    private fun currentLanguage() = p.getString(SettingsActivity.KEY_LANGUAGE, "English (US)") ?: "English (US)"
     private fun showAccents(anchor: View, base: Char) { if (!p.getBoolean(SettingsActivity.KEY_LONG_PRESS, true)) return; val accents = KeyboardLayouts.accents(base); if (accents.isEmpty()) { Toast.makeText(this, "No alternate characters", Toast.LENGTH_SHORT).show(); return }; commit(accents.first()) }
     private fun refresh() { setInputView(build()) }
     private fun scaled(value: Int) = dp(value * scale * height)
