@@ -39,6 +39,7 @@ class SettingsActivity : Activity() {
 
         section(root, "Typing")
         root.addView(slider("Keyboard size", KEY_SIZE, 80, 140)); root.addView(slider("Keyboard height", KEY_HEIGHT, 70, 140)); root.addView(slider("Keyboard width", KEY_WIDTH, 70, 100))
+        root.addView(button("Enter exact size values") { preciseSizing() })
         root.addView(toggle("Autocorrect", "Correct common spelling mistakes", KEY_AUTOCORRECT, true)); root.addView(toggle("Next-word suggestions", "Show local prediction bar", KEY_SUGGESTIONS, true)); root.addView(toggle("Double-space punctuation", "Two spaces become period + space", KEY_DOUBLE_SPACE, true)); root.addView(toggle("Emoji predictions", "Keep favorite emoji close", KEY_EMOJI_PREDICTIONS, true))
 
         section(root, "Gestures & key behavior")
@@ -73,6 +74,12 @@ class SettingsActivity : Activity() {
         val bg = colorInput("Background", "custom_bg", "#111827", box); val key = colorInput("Key color", "custom_key", "#1F2937", box); val text = colorInput("Text color", "custom_text", "#FFFFFF", box)
         AlertDialog.Builder(this).setTitle("Custom theme colors").setMessage("Enter hex colors such as #111827 or #FFFFFF. The keyboard updates when it is reopened.").setView(box).setNegativeButton("Cancel", null).setPositiveButton("Save") { _, _ -> p.edit().putString(KEY_THEME, "custom").putString("custom_bg", bg.text.toString()).putString("custom_key", key.text.toString()).putString("custom_text", text.text.toString()).apply(); Toast.makeText(this, "Custom theme saved", Toast.LENGTH_SHORT).show() }.show()
     }
+    private fun preciseSizing() {
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(8), dp(24), 0) }
+        val size = numberInput("Overall scale %", KEY_SIZE, 80, 140, box); val height = numberInput("Height %", KEY_HEIGHT, 70, 140, box); val width = numberInput("Width %", KEY_WIDTH, 70, 100, box)
+        AlertDialog.Builder(this).setTitle("Precise keyboard sizing").setMessage("Values are percentages. Changes apply when the keyboard is recreated.").setView(box).setNegativeButton("Cancel", null).setPositiveButton("Save") { _, _ -> p.edit().putInt(KEY_SIZE, size.text.toString().toIntOrNull()?.coerceIn(80, 140) ?: 100).putInt(KEY_HEIGHT, height.text.toString().toIntOrNull()?.coerceIn(70, 140) ?: 100).putInt(KEY_WIDTH, width.text.toString().toIntOrNull()?.coerceIn(70, 100) ?: 100).apply(); Toast.makeText(this, "Exact sizing saved", Toast.LENGTH_SHORT).show() }.show()
+    }
+    private fun numberInput(label: String, key: String, min: Int, max: Int, parent: LinearLayout): EditText { val input = EditText(this).apply { hint = "$label ($min-$max)"; setText(p.getInt(key, 100).toString()); inputType = android.text.InputType.TYPE_CLASS_NUMBER; contentDescription = label }; parent.addView(input); return input }
     private fun colorInput(label: String, key: String, fallback: String, parent: LinearLayout): EditText { val input = EditText(this).apply { hint = label; setText(p.getString(key, fallback)); contentDescription = "$label hex color" }; parent.addView(input); return input }
     private fun mode(mode: String) { p.edit().putString(KEY_LAYOUT_MODE, mode).putBoolean(KEY_ONE_HANDED, mode == "one-handed").putBoolean(KEY_FLOATING, mode == "floating").apply(); updateStatus() }
     private fun chooseKeyboard() { try { (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker() } catch (_: Throwable) { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)) } }

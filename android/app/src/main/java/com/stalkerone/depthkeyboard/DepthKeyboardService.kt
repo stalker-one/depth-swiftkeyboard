@@ -34,7 +34,7 @@ class DepthKeyboardService : InputMethodService() {
 
     private fun build(): View {
         val theme = ThemeCatalog.current(this)
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; setPadding(dp(5), dp(3), dp(5), dp(7)); setBackgroundColor(theme.background) }
+        val root = GestureLayout(this) { word -> commit(word + " ") }.apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; setPadding(dp(5), dp(3), dp(5), dp(7)); setBackgroundColor(theme.background) }
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         val mode = p.getString(SettingsActivity.KEY_LAYOUT_MODE, "standard")
         val modeScale = when (mode) { "one-handed" -> .78f; "floating" -> .84f else -> 1f }
@@ -164,4 +164,20 @@ class DepthKeyboardService : InputMethodService() {
     private fun scaled(value: Int) = dp(value * scale * height)
     private fun dp(value: Int) = (value * resources.displayMetrics.density).roundToInt()
     private fun dp(value: Float) = (value * resources.displayMetrics.density).roundToInt()
+
+    private inner class GestureLayout(context: android.content.Context, private val onWord: (String) -> Unit) : LinearLayout(context) {
+        private var startX = 0f; private var startY = 0f; private var active = false; private val trace = StringBuilder()
+        override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+            if (!p.getBoolean(SettingsActivity.KEY_FLOW, false)) return super.dispatchTouchEvent(event)
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> { startX = event.x; startY = event.y; active = false; trace.setLength(0); addTrace(event.x, event.y) }
+                MotionEvent.ACTION_MOVE -> { if (!active && kotlin.math.hypot((event.x - startX).toDouble(), (event.y - startY).toDouble()) > dp(18)) { active = true; super.dispatchTouchEvent(MotionEvent.obtain(event).apply { setAction(MotionEvent.ACTION_CANCEL) }); }; if (active) { addTrace(event.x, event.y); return true } }
+                MotionEvent.ACTION_UP -> { if (active) { addTrace(event.x, event.y); GestureResolver.resolve(trace.toString(), currentLanguage())?.let(onWord); active = false; return true } }
+                MotionEvent.ACTION_CANCEL -> { active = false }
+            }
+            return super.dispatchTouchEvent(event)
+        }
+        private fun addTrace(x: Float, y: Float) { val view = findViewAt(this, x.toInt(), y.toInt()); if (view is Button) { val value = view.text.toString(); if (value.length == 1 && value[0].isLetter() && (trace.isEmpty() || trace.last() != value[0])) trace.append(value) } }
+        private fun findViewAt(parent: android.view.ViewGroup, x: Int, y: Int): View? { for (i in parent.childCount - 1 downTo 0) { val child = parent.getChildAt(i); if (x < child.left || x > child.right || y < child.top || y > child.bottom) continue; if (child is android.view.ViewGroup) findViewAt(child, x - child.left, y - child.top)?.let { return it }; return child }; return null }
+    }
 }
