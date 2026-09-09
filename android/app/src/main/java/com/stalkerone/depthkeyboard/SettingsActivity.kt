@@ -30,24 +30,38 @@ class SettingsActivity : Activity() {
 
     private lateinit var status: TextView
     private val prefs by lazy { getSharedPreferences(PREFS, MODE_PRIVATE) }
+    private val updateManager by lazy { AppUpdateManager(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(buildContent())
         updateStatus()
+        updateManager.checkOnLaunch()
     }
 
     private fun buildContent(): View {
         val scroll = android.widget.ScrollView(this)
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(28, 24, 28, 28) }
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(28, 24, 28, 28)
+        }
 
         root.addView(TextView(this).apply {
-            text = "Depth Keyboard"; textSize = 28f; setTextColor(0xff18243a.toInt())
+            text = "Depth Keyboard"
+            textSize = 28f
+            setTextColor(0xff18243a.toInt())
         })
         root.addView(TextView(this).apply {
-            text = "Keyboard layout, height and width"; textSize = 14f; setTextColor(0xff71809b.toInt()); setPadding(0, 4, 0, 18)
+            text = "Keyboard layout, height and width"
+            textSize = 14f
+            setTextColor(0xff71809b.toInt())
+            setPadding(0, 4, 0, 18)
         })
-        status = TextView(this).apply { textSize = 13f; setPadding(14, 12, 14, 12); setBackgroundColor(0xffeef2ff.toInt()) }
+        status = TextView(this).apply {
+            textSize = 13f
+            setPadding(14, 12, 14, 12)
+            setBackgroundColor(0xffeef2ff.toInt())
+        }
         root.addView(status, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = 18 })
 
         root.addView(sectionTitle("Keyboard size"))
@@ -62,8 +76,14 @@ class SettingsActivity : Activity() {
         root.addView(Button(this).apply {
             text = "Reset layout size"
             setOnClickListener {
-                prefs.edit().putInt(KEY_SIZE, 100).putInt(KEY_WIDTH, 100).putInt(KEY_HEIGHT, 100)
-                    .putBoolean(KEY_ONE_HANDED, false).putBoolean(KEY_FLOATING, false).putString(KEY_LAYOUT_MODE, "standard").apply()
+                prefs.edit()
+                    .putInt(KEY_SIZE, 100)
+                    .putInt(KEY_WIDTH, 100)
+                    .putInt(KEY_HEIGHT, 100)
+                    .putBoolean(KEY_ONE_HANDED, false)
+                    .putBoolean(KEY_FLOATING, false)
+                    .putString(KEY_LAYOUT_MODE, "standard")
+                    .apply()
                 recreate()
             }
         })
@@ -89,12 +109,16 @@ class SettingsActivity : Activity() {
         root.addView(sectionTitle("Languages & tools"))
         root.addView(TextView(this).apply {
             text = "English (US)  ·  Español (ES)\nEmoji  ·  Clipboard  ·  Symbols  ·  AI-ready  ·  Translator-ready"
-            textSize = 14f; setTextColor(0xff50617c.toInt()); setPadding(0, 0, 0, 12)
+            textSize = 14f
+            setTextColor(0xff50617c.toInt())
+            setPadding(0, 0, 0, 12)
         })
         root.addView(Button(this).apply { text = "Manage languages" })
         root.addView(TextView(this).apply {
             text = "Changes are saved immediately and are applied when the keyboard redraws. The keyboard toolbar also has quick resize controls."
-            textSize = 12f; setTextColor(0xff71809b.toInt()); setPadding(0, 18, 0, 0)
+            textSize = 12f
+            setTextColor(0xff71809b.toInt())
+            setPadding(0, 18, 0, 0)
         })
 
         scroll.addView(root)
@@ -102,11 +126,23 @@ class SettingsActivity : Activity() {
     }
 
     private fun sizeControl(title: String, key: String, min: Int, max: Int, default: Int): View {
-        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 8, 0, 10) }
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, 8, 0, 10)
+        }
         val row = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
-        val label = TextView(this).apply { text = title; textSize = 14f; setTextColor(0xff18243a.toInt()) }
-        val value = TextView(this).apply { textSize = 13f; setTextColor(0xff5669d5.toInt()); gravity = Gravity.END }
-        row.addView(label, LinearLayout.LayoutParams(0, -2, 1f)); row.addView(value, LinearLayout.LayoutParams(60, -2))
+        val label = TextView(this).apply {
+            text = title
+            textSize = 14f
+            setTextColor(0xff18243a.toInt())
+        }
+        val value = TextView(this).apply {
+            textSize = 13f
+            setTextColor(0xff5669d5.toInt())
+            gravity = Gravity.END
+        }
+        row.addView(label, LinearLayout.LayoutParams(0, -2, 1f))
+        row.addView(value, LinearLayout.LayoutParams(60, -2))
         box.addView(row)
         val bar = SeekBar(this).apply {
             this.max = max - min
@@ -115,7 +151,8 @@ class SettingsActivity : Activity() {
         fun update() { value.text = "${bar.progress + min}%" }
         bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(b: SeekBar?, progress: Int, fromUser: Boolean) {
-                prefs.edit().putInt(key, progress + min).apply(); update()
+                prefs.edit().putInt(key, progress + min).apply()
+                update()
             }
             override fun onStartTrackingTouch(b: SeekBar?) = Unit
             override fun onStopTrackingTouch(b: SeekBar?) = Unit
@@ -130,30 +167,50 @@ class SettingsActivity : Activity() {
             text = "$title\n$subtitle"
             isAllCaps = false
             setOnClickListener {
-                prefs.edit().putString(KEY_LAYOUT_MODE, mode)
+                prefs.edit()
+                    .putString(KEY_LAYOUT_MODE, mode)
                     .putBoolean(KEY_ONE_HANDED, mode == "one-handed")
-                    .putBoolean(KEY_FLOATING, mode == "floating").apply()
+                    .putBoolean(KEY_FLOATING, mode == "floating")
+                    .apply()
                 recreate()
             }
         }
     }
 
     private fun sectionTitle(text: String) = TextView(this).apply {
-        this.text = text; textSize = 17f; setTextColor(0xff18243a.toInt()); setPadding(0, 22, 0, 8)
+        this.text = text
+        textSize = 17f
+        setTextColor(0xff18243a.toInt())
+        setPadding(0, 22, 0, 8)
     }
 
     private fun settingSwitch(title: String, subtitle: String, key: String, default: Boolean): View {
-        val box = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL; setPadding(0, 8, 0, 8) }
+        val box = LinearLayout(this).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, 8, 0, 8)
+        }
         val copy = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        copy.addView(TextView(this).apply { text = title; textSize = 14f; setTextColor(0xff18243a.toInt()) })
-        copy.addView(TextView(this).apply { text = subtitle; textSize = 11f; setTextColor(0xff71809b.toInt()) })
+        copy.addView(TextView(this).apply {
+            text = title
+            textSize = 14f
+            setTextColor(0xff18243a.toInt())
+        })
+        copy.addView(TextView(this).apply {
+            text = subtitle
+            textSize = 11f
+            setTextColor(0xff71809b.toInt())
+        })
         box.addView(copy, LinearLayout.LayoutParams(0, -2, 1f))
         val toggle = Switch(this).apply {
             isChecked = prefs.getBoolean(key, default)
             setOnCheckedChangeListener { _, checked ->
                 prefs.edit().putBoolean(key, checked).apply()
-                if (key == KEY_ONE_HANDED && checked) prefs.edit().putBoolean(KEY_FLOATING, false).putString(KEY_LAYOUT_MODE, "one-handed").apply()
-                if (key == KEY_FLOATING && checked) prefs.edit().putBoolean(KEY_ONE_HANDED, false).putString(KEY_LAYOUT_MODE, "floating").apply()
+                if (key == KEY_ONE_HANDED && checked) {
+                    prefs.edit().putBoolean(KEY_FLOATING, false).putString(KEY_LAYOUT_MODE, "one-handed").apply()
+                }
+                if (key == KEY_FLOATING && checked) {
+                    prefs.edit().putBoolean(KEY_ONE_HANDED, false).putString(KEY_LAYOUT_MODE, "floating").apply()
+                }
             }
         }
         box.addView(toggle)
@@ -161,11 +218,18 @@ class SettingsActivity : Activity() {
     }
 
     private fun chooseKeyboard() {
-        try { (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker() }
-        catch (_: Throwable) { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)) }
+        try {
+            (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker()
+        } catch (_: Throwable) {
+            startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
+        }
     }
 
-    override fun onResume() { super.onResume(); if (::status.isInitialized) updateStatus() }
+    override fun onResume() {
+        super.onResume()
+        if (::status.isInitialized) updateStatus()
+        updateManager.onResume()
+    }
 
     private fun updateStatus() {
         status.text = try {
@@ -174,7 +238,10 @@ class SettingsActivity : Activity() {
             val mode = prefs.getString(KEY_LAYOUT_MODE, "standard") ?: "standard"
             val width = prefs.getInt(KEY_WIDTH, 100)
             val height = prefs.getInt(KEY_HEIGHT, 100)
-            if (enabled) "✓ Enabled · $mode · width ${width}% · height ${height}%" else "Keyboard not enabled · choose Enable below"
-        } catch (_: Throwable) { "Use the Android keyboard settings below to finish setup." }
+            if (enabled) "✓ Enabled · $mode · width ${width}% · height ${height}%"
+            else "Keyboard not enabled · choose Enable below"
+        } catch (_: Throwable) {
+            "Use the Android keyboard settings below to finish setup."
+        }
     }
 }
