@@ -20,6 +20,7 @@ class SettingsActivity : Activity() {
         const val KEY_DOUBLE_SPACE = "double_space"; const val KEY_AUTOCORRECT = "autocorrect"; const val KEY_LONG_PRESS = "long_press"
         const val KEY_KEY_POPUP = "key_popup"; const val KEY_HAPTIC = "haptic"; const val KEY_SOUND = "sound"; const val KEY_NUMBER_ROW = "number_row"
         const val KEY_FLOW = "flow_typing"; const val KEY_EMOJI_PREDICTIONS = "emoji_predictions"; const val KEY_HIGH_CONTRAST = "high_contrast"
+        const val KEY_SPLIT = "split_layout"; const val KEY_EMOJI_CATEGORY = "emoji_category"
     }
 
     private val p by lazy { getSharedPreferences(PREFS, MODE_PRIVATE) }
@@ -43,7 +44,7 @@ class SettingsActivity : Activity() {
         root.addView(toggle("Long-press accents", "Hold a letter for accented characters", KEY_LONG_PRESS, true)); root.addView(toggle("Key pop-up preview", "Show a visual key response", KEY_KEY_POPUP, true)); root.addView(toggle("Flow / swipe typing", "Enable the gesture typing setting", KEY_FLOW, false)); root.addView(toggle("Haptic feedback", "Vibrate on key press", KEY_HAPTIC, false)); root.addView(toggle("Key sounds", "Play a sound on key press", KEY_SOUND, false))
 
         section(root, "Layout & keys")
-        root.addView(button("Standard layout") { mode("standard") }); root.addView(button("One-handed layout") { mode("one-handed") }); root.addView(button("Floating layout") { mode("floating") }); root.addView(toggle("Compact keys", "Reduce key height", KEY_COMPACT, false)); root.addView(toggle("Number row", "Keep numbers available above letters", KEY_NUMBER_ROW, false))
+        root.addView(button("Standard layout") { mode("standard") }); root.addView(button("One-handed layout") { mode("one-handed") }); root.addView(button("Floating layout") { mode("floating") }); root.addView(toggle("Split / thumb layout", "Keep a comfortable gap in the middle", KEY_SPLIT, false)); root.addView(toggle("Compact keys", "Reduce key height", KEY_COMPACT, false)); root.addView(toggle("Number row", "Keep numbers available above letters", KEY_NUMBER_ROW, false))
         root.addView(select("Language", KEY_LANGUAGE, KeyboardLayouts.languages)); root.addView(select("Keyboard layout", KEY_LAYOUT, listOf("QWERTY", "QWERTZ", "AZERTY", "DVORAK", "COLEMAK")))
 
         section(root, "Rich input & toolbar")
@@ -53,7 +54,7 @@ class SettingsActivity : Activity() {
         root.addView(select("Theme", KEY_THEME, ThemeCatalog.themes.map { it.id })); root.addView(toggle("High contrast", "Increase visual separation between keys", KEY_HIGH_CONTRAST, false)); root.addView(toggle("Midnight theme", "Use a dark keyboard surface", KEY_DARK_THEME, true))
 
         section(root, "Privacy & data")
-        root.addView(toggle("Incognito mode", "Stop local personalization", KEY_INCOGNITO, false)); root.addView(button("Clear learned words") { TypingModel(this).clear(); Toast.makeText(this, "Personalization cleared", Toast.LENGTH_SHORT).show() }); root.addView(button("Clear clipboard history") { ClipboardStore(this).clear(); Toast.makeText(this, "Clipboard history cleared", Toast.LENGTH_SHORT).show() })
+        root.addView(toggle("Incognito mode", "Stop local personalization and clipboard capture", KEY_INCOGNITO, false)); root.addView(button("Clear learned words") { TypingModel(this).clear(); Toast.makeText(this, "Personalization cleared", Toast.LENGTH_SHORT).show() }); root.addView(button("Clear clipboard history") { ClipboardStore(this).clear(); Toast.makeText(this, "Clipboard history cleared", Toast.LENGTH_SHORT).show() }); root.addView(button("Reset all keyboard settings") { p.edit().clear().apply(); Toast.makeText(this, "Settings reset to defaults", Toast.LENGTH_SHORT).show(); recreate() })
 
         section(root, "Setup")
         root.addView(button("Enable / choose keyboard") { chooseKeyboard() }); root.addView(button("Open Android input-method settings") { startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)) })

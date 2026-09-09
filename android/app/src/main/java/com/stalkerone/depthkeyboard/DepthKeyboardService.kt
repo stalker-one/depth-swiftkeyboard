@@ -35,7 +35,9 @@ class DepthKeyboardService : InputMethodService() {
         val theme = ThemeCatalog.current(this)
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; setPadding(dp(5), dp(3), dp(5), dp(7)); setBackgroundColor(theme.background) }
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        val width = (resources.displayMetrics.widthPixels * p.getInt(SettingsActivity.KEY_WIDTH, 100) / 100f).roundToInt()
+        val mode = p.getString(SettingsActivity.KEY_LAYOUT_MODE, "standard")
+        val modeScale = when (mode) { "one-handed" -> .78f; "floating" -> .84f else -> 1f }
+        val width = (resources.displayMetrics.widthPixels * p.getInt(SettingsActivity.KEY_WIDTH, 100) / 100f * modeScale).roundToInt()
         root.addView(box, LinearLayout.LayoutParams(width, -2))
         val bar = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         key(bar, "☰", .8f, theme.text) { tools = !tools; clipboardMode = false; refresh() }
@@ -51,15 +53,16 @@ class DepthKeyboardService : InputMethodService() {
         if (tools) { toolRow(box, theme.text); if (clipboardMode) clipboardRow(box, theme.text) else emojiRow(box, theme.text) } else suggestions(box, theme.text)
 
         val layout = p.getString(SettingsActivity.KEY_LAYOUT, "QWERTY") ?: "QWERTY"
-        val rows = if (symbols) listOf("1234567890", "@#$%&*+-=", "()[]{}!?/") else KeyboardLayouts.rows(currentLanguage, layout)
+        val baseRows = if (symbols) listOf("1234567890", "@#$%&*+-=", "()[]{}!?/") else KeyboardLayouts.rows(currentLanguage, layout)
+        val rows = if (!symbols && p.getBoolean(SettingsActivity.KEY_NUMBER_ROW, false)) listOf("1234567890") + baseRows else baseRows
         rows.forEachIndexed { index, row ->
-            val keyRow = LinearLayout(this).apply { gravity = Gravity.CENTER }
-            if (index == 2) key(keyRow, if (symbols) "ABC" else if (capsLock) "⇪" else "⇧", 1f, theme.text) { if (symbols) symbols = false else if (shift) { capsLock = true; shift = false } else if (capsLock) { capsLock = false } else shift = true; refresh() }
+            val keyRow = LinearLayout(this).apply { gravity = Gravity.CENTER; if (p.getBoolean(SettingsActivity.KEY_SPLIT, false) && !symbols) setPadding(dp(10), 0, dp(10), 0) }
+            if (index == rows.lastIndex) key(keyRow, if (symbols) "ABC" else if (capsLock) "⇪" else "⇧", 1f, theme.text) { if (symbols) symbols = false else if (shift) { capsLock = true; shift = false } else if (capsLock) { capsLock = false } else shift = true; refresh() }
             row.forEach { ch ->
                 val value = if ((shift || capsLock) && !symbols) ch.uppercaseChar().toString() else ch.toString()
                 key(keyRow, value, 1f, theme.text, { anchor -> showAccents(anchor, ch) }) { commit(value); if (shift && !capsLock && !symbols) { shift = false; refresh() } }
             }
-            if (index == 2) key(keyRow, "⌫", 1.2f, theme.text) { backspace() }
+            if (index == rows.lastIndex) key(keyRow, "⌫", 1.2f, theme.text) { backspace() }
             box.addView(keyRow, LinearLayout.LayoutParams(-1, scaled(if (compact) 43 else 51)))
         }
         val bottom = LinearLayout(this).apply { gravity = Gravity.CENTER }
@@ -99,9 +102,14 @@ class DepthKeyboardService : InputMethodService() {
     }
 
     private fun emojiRow(box: LinearLayout, fg: Int) {
-        val recent = p.getString("recent_emojis", "😀|😂|😍|👍|🔥|✨|🎉|🤔")!!.split('|').filter { it.isNotBlank() }.take(8)
+        val categories = EmojiCatalog.categories.keys.toList()
+        val category = p.getString(SettingsActivity.KEY_EMOJI_CATEGORY, "Recent") ?: "Recent"
+        val tabs = LinearLayout(this).apply { gravity = Gravity.CENTER }
+        categories.take(4).forEach { name -> key(tabs, name, 1f, fg) { p.edit().putString(SettingsActivity.KEY_EMOJI_CATEGORY, name).apply(); refresh() } }
+        box.addView(tabs, LinearLayout.LayoutParams(-1, scaled(38)))
+        val recent = if (category == "Recent") p.getString("recent_emojis", "")!!.split('|').filter { it.isNotBlank() }.ifEmpty { EmojiCatalog.categories["Recent"].orEmpty() } else EmojiCatalog.categories[category].orEmpty()
         val row = LinearLayout(this).apply { gravity = Gravity.CENTER }
-        recent.forEach { emoji -> key(row, emoji, 1f, fg) { rememberEmoji(emoji); commit(emoji) } }
+        recent.take(8).forEach { emoji -> key(row, emoji, 1f, fg) { rememberEmoji(emoji); commit(emoji) } }
         box.addView(row, LinearLayout.LayoutParams(-1, scaled(46)))
     }
 
@@ -121,9 +129,10 @@ class DepthKeyboardService : InputMethodService() {
         row.addView(button, LinearLayout.LayoutParams(0, scaled(if (text.length > 1) 42 else if (compact) 43 else 51), weight).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) })
     }
 
-    private fun commit(text: String) { currentInputConnection?.commitText(text, 1); ClipboardStore(this).add(text); if (!p.getBoolean(SettingsActivity.KEY_INCOGNITO, false)) model.learn(text) }
+    private fun commit(text: String) { currentInputConnection?.commitText(text, 1); if (!p.getBoolean(SettingsActivity.KEY_INCOGNITO, false)) { ClipboardStore(this).add(text); model.learn(text) } }
     private fun paste() { ClipboardStore(this).items().firstOrNull()?.let { commit(it) } }
-    private fun space() { if (p.getBoolean(SettingsActivity.KEY_DOUBLE_SPACE, true) && currentInputConnection?.getTextBeforeCursor(2, 0)?.toString() == "  ") { currentInputConnection?.deleteSurroundingText(2, 0); commit(". ") } else commit(" ") }
+    private fun space() { if (p.getBoolean(SettingsActivity.KEY_DOUBLE_SPACE, true) && currentInputConnection?.getTextBeforeCursor(2, 0)?.toString() == "  ") { currentInputConnection?.deleteSurroundingText(2, 0); commit(". ") } else if (p.getBoolean(SettingsActivity.KEY_AUTOCORRECT, true)) { autocorrectAndSpace() } else commit(" ") }
+    private fun autocorrectAndSpace() { val c = currentInputConnection ?: return; val before = c.getTextBeforeCursor(80, 0)?.toString().orEmpty(); val word = before.takeLastWhile { !it.isWhitespace() }; val corrected = FeatureEngine.autocorrect(word); if (corrected != word && word.isNotEmpty()) { c.deleteSurroundingText(word.length, 0); commit(corrected) }; commit(" ") }
     private fun backspace() { val c = currentInputConnection ?: return; val before = c.getTextBeforeCursor(80, 0)?.toString().orEmpty(); val count = if (before.endsWith(" ")) 1 else before.takeLastWhile { !it.isWhitespace() }.length.coerceAtLeast(1); c.deleteSurroundingText(count, 0) }
     private fun enter() { val c = currentInputConnection ?: return; val action = currentInputEditorInfo?.imeOptions?.and(EditorInfo.IME_MASK_ACTION) ?: 0; if (action != 0) c.performEditorAction(action) else { c.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)); c.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER)) } }
     private fun ai() { val text = currentInputConnection?.getTextBeforeCursor(500, 0)?.toString().orEmpty(); if (text.isBlank()) Toast.makeText(this, "Type text first", Toast.LENGTH_SHORT).show() else commit(FeatureEngine.tonePrompt("professional", text)) }

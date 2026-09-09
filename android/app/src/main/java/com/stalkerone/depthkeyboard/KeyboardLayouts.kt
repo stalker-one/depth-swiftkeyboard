@@ -5,6 +5,8 @@ object KeyboardLayouts {
     private val qwerty = listOf("qwertyuiop", "asdfghjkl", "zxcvbnm")
     private val azerty = listOf("azertyuiop", "qsdfghjklm", "wxcvbn")
     private val qwertz = listOf("qwertzuiop", "asdfghjkl", "yxcvbnm")
+    private val dvorak = listOf("',.pyfgcrl", "aoeuidhtns", ";qjkxbmwvz")
+    private val colemak = listOf("qwfpgjluy;", "arstdhneio", "zxcvbkm,.")
     private val urdu = listOf("ضصثقفغعهخحج", "شسیبلاتنمک", "ظطزرذدپوچ")
     private val arabic = listOf("ضصثقفغعهخحج", "شسيبلاتنمك", "ئءؤرلاىةوزظ")
 
@@ -13,6 +15,8 @@ object KeyboardLayouts {
         language.equals("Arabic", true) -> arabic
         layout.equals("AZERTY", true) -> azerty
         layout.equals("QWERTZ", true) -> qwertz
+        layout.equals("DVORAK", true) -> dvorak
+        layout.equals("COLEMAK", true) -> colemak
         else -> qwerty
     }
 
