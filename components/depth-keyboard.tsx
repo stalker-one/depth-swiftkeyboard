@@ -20,12 +20,12 @@ import {
 const apkDownloadUrl = 'https://github.com/stalker-one/depth-swiftkeyboard/releases/download/Depth-SwiftKeyboard/depth-keyboard.apk'
 
 const capabilities = [
-  ['01', 'AI Assist', 'Rewrite, polish, brainstorm and compose without leaving the app.'],
-  ['02', 'Flow Typing', 'Swipe, predict and complete words at the speed of your thoughts.'],
-  ['03', 'Voice', 'Dictate naturally with fast voice-to-text input.'],
-  ['04', 'Languages', 'Switch languages and layouts without breaking your flow.'],
-  ['05', 'Rich Input', 'Emoji, GIFs, stickers, search and clipboard in one toolbar.'],
-  ['06', 'Privacy', 'Local-first controls with Incognito and learning preferences.'],
+  ['01', 'Smartbar', 'Keep emoji, clipboard, language switching, search and settings one tap away.'],
+  ['02', 'Typing', 'Use local predictions, autocorrect, caps lock, double-space punctuation and accents.'],
+  ['03', 'Layouts', 'Choose QWERTY, QWERTZ, AZERTY, DVORAK or COLEMAK with size and height controls.'],
+  ['04', 'Languages', 'Switch local language layouts without breaking your flow.'],
+  ['05', 'Emoji + Clips', 'Browse emoji categories, recent emoji and local clipboard history.'],
+  ['06', 'Privacy', 'Incognito mode, local learning, clear-data controls and no bundled online provider.'],
 ]
 
 const languages = ['English', 'اردو', 'العربية', 'Español', 'Deutsch', 'Français']
@@ -51,12 +51,12 @@ export default function DepthKeyboard() {
         <div className="hero-copy modern-hero-copy">
           <div className="status-badge"><span /> Built for Android · 8+</div>
           <h1>Your keyboard.<br /><span>Your intelligence.</span></h1>
-          <p>Depth is a modern, private-first keyboard built around how people actually communicate — fast typing, AI assistance, rich input and total control.</p>
+          <p>Depth is a modern, private-first keyboard built around fast local typing, rich input, flexible layouts and settings you can actually control.</p>
           <div className="hero-actions">
             <a className="download-button hero-button" href={apkDownloadUrl} download="depth-keyboard.apk"><Download size={17} /> Download for Android <ArrowRight size={16} /></a>
             <a className="text-cta" href="#features">Explore features <ArrowRight size={15} /></a>
           </div>
-          <div className="hero-proof"><span><ShieldCheck size={14} /> Privacy controls</span><span><Sparkles size={14} /> AI-ready</span><span><Globe2 size={14} /> Multilingual</span></div>
+          <div className="hero-proof"><span><ShieldCheck size={14} /> Local-first</span><span><Sparkles size={14} /> Customizable</span><span><Globe2 size={14} /> Multilingual</span></div>
         </div>
 
         <div className="hero-device" aria-label="Depth Keyboard interactive preview">
@@ -84,7 +84,7 @@ export default function DepthKeyboard() {
       </section>
 
       <section className="marquee-section" aria-label="Depth capabilities">
-        <div className="marquee-track">{['AI ASSIST', 'FLOW TYPING', 'VOICE', '700+ LANGUAGE GOAL', 'EMOJI', 'GIFS', 'STICKERS', 'CLIPBOARD', 'TRANSLATOR', 'SEARCH', 'THEMES', 'PRIVACY'].map((item, i) => <span key={`${item}-${i}`}>{item}<b>✦</b></span>)}</div>
+        <div className="marquee-track">{['SMARTBAR', 'LONG PRESS', 'CAPS LOCK', 'DOUBLE SPACE', 'EMOJI', 'CLIPBOARD', 'DVORAK', 'COLEMAK', 'THEMES', 'LAYOUTS', 'INCOGNITO', 'PRIVACY'].map((item, i) => <span key={`${item}-${i}`}>{item}<b>✦</b></span>)}</div>
       </section>
 
       <section id="features" className="modern-section features-modern">
@@ -93,18 +93,18 @@ export default function DepthKeyboard() {
       </section>
 
       <section id="ai" className="ai-modern modern-section">
-        <div className="ai-copy"><span className="section-number">02</span><p className="eyebrow">DEPTH AI</p><h2>Think it.<br /><em>Say it better.</em></h2><p>Turn rough thoughts into clear messages. Rewrite tone, shorten a paragraph, make it professional, or start from an idea — right above the keyboard.</p><div className="ai-list"><span><Check /> Professional</span><span><Check /> Casual</span><span><Check /> Polite</span><span><Check /> Social post</span></div></div>
+        <div className="ai-copy"><span className="section-number">02</span><p className="eyebrow">CONTROL CENTER</p><h2>Make it yours.<br /><em>One setting at a time.</em></h2><p>Adjust keyboard size, height, width, themes, layouts, accents, emoji behavior, clipboard history, privacy and input feedback from a modern grouped settings screen.</p><div className="ai-list"><span><Check /> Size + height</span><span><Check /> Layout modes</span><span><Check /> Emoji categories</span><span><Check /> Privacy controls</span></div></div>
         <div className="ai-window">
-          <div className="ai-window-top"><span><Sparkles size={15} /> DEPTH AI</span><small>Compose assistant</small></div>
-          <div className="ai-prompt"><small>YOUR DRAFT</small><p>can you send me the project details when you get time</p></div>
-          <div className="ai-actions"><button>Professional</button><button>Friendly</button><button>Shorter</button></div>
-          <div className="ai-answer"><span><Sparkles size={14} /> READY</span><p>Could you please send me the project details when you have a moment?</p><button><Clipboard size={14} /> Copy</button></div>
+          <div className="ai-window-top"><span><Sparkles size={15} /> DEPTH SETTINGS</span><small>Keyboard control center</small></div>
+          <div className="ai-prompt"><small>ACTIVE PROFILE</small><p>Midnight · QWERTY · 110% size · Local learning</p></div>
+          <div className="ai-actions"><button>Typing</button><button>Layouts</button><button>Privacy</button></div>
+          <div className="ai-answer"><span><Sparkles size={14} /> READY</span><p>Long-press accents, double-space punctuation, emoji recents and clipboard history are available from the keyboard.</p><button><Clipboard size={14} /> Explore</button></div>
         </div>
       </section>
 
       <section className="tools-modern modern-section">
         <div className="tools-visual"><div className="tool-orbit orbit-a" /><div className="tool-orbit orbit-b" /><div className="tool-center"><Sparkles size={30} /></div><div className="tool-node node-a"><Search /></div><div className="tool-node node-b"><Languages /></div><div className="tool-node node-c"><Clipboard /></div><div className="tool-node node-d"><Sticker /></div></div>
-        <div className="tools-copy"><span className="section-number">03</span><p className="eyebrow">ONE TAP AWAY</p><h2>Your whole internet life, <em>from the keyboard.</em></h2><p>Search the web, translate, find a GIF, grab a saved phrase or drop an emoji without jumping between apps.</p><div className="tool-pills"><span><Search /> Search</span><span><Languages /> Translate</span><span><Clipboard /> Clipboard</span><span><Sticker /> GIFs & stickers</span></div></div>
+        <div className="tools-copy"><span className="section-number">03</span><p className="eyebrow">ONE TAP AWAY</p><h2>Your everyday tools, <em>from the keyboard.</em></h2><p>Open local clipboard history, emoji categories, language switching, settings and browser search without leaving the text field.</p><div className="tool-pills"><span><Search /> Search</span><span><Languages /> Languages</span><span><Clipboard /> Clipboard</span><span><Sticker /> Emoji</span></div></div>
       </section>
 
       <section id="privacy" className="privacy-modern modern-section">

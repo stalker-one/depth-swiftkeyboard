@@ -109,17 +109,18 @@ class DepthKeyboardService : InputMethodService() {
         box.addView(tabs, LinearLayout.LayoutParams(-1, scaled(38)))
         val recent = if (category == "Recent") p.getString("recent_emojis", "")!!.split('|').filter { it.isNotBlank() }.ifEmpty { EmojiCatalog.categories["Recent"].orEmpty() } else EmojiCatalog.categories[category].orEmpty()
         val row = LinearLayout(this).apply { gravity = Gravity.CENTER }
-        recent.take(8).forEach { emoji -> key(row, emoji, 1f, fg) { rememberEmoji(emoji); commit(emoji) } }
+        recent.take(8).forEach { emoji -> key(row, emoji, 1f, fg, { removeEmoji(emoji) }) { rememberEmoji(emoji); commit(emoji) } }
         box.addView(row, LinearLayout.LayoutParams(-1, scaled(46)))
     }
 
     private fun rememberEmoji(emoji: String) { val recent = p.getString("recent_emojis", "")!!.split('|').filter { it.isNotBlank() }; p.edit().putString("recent_emojis", (listOf(emoji) + recent.filterNot { it == emoji }).take(20).joinToString("|")).apply() }
+    private fun removeEmoji(emoji: String) { val recent = p.getString("recent_emojis", "")!!.split('|').filter { it.isNotBlank() && it != emoji }; p.edit().putString("recent_emojis", recent.joinToString("|")).apply(); refresh() }
 
     private fun clipboardRow(box: LinearLayout, fg: Int) {
         val clips = ClipboardStore(this).items().take(3)
         val row = LinearLayout(this).apply { gravity = Gravity.CENTER }
         if (clips.isEmpty()) key(row, "No saved clips", 1f, fg) { clipboardMode = false; refresh() }
-        else clips.forEach { clip -> key(row, clip.take(18), 1f, fg) { commit(clip); clipboardMode = false; refresh() } }
+        else clips.forEach { clip -> key(row, clip.take(18), 1f, fg, { ClipboardStore(this).remove(clip); refresh() }) { commit(clip); clipboardMode = false; refresh() } }
         box.addView(row, LinearLayout.LayoutParams(-1, scaled(46)))
     }
 
