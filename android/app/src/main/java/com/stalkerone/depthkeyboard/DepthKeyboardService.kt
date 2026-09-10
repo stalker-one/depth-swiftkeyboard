@@ -7,6 +7,9 @@ import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.MotionEvent
+import android.view.ViewConfiguration
+import android.os.Vibrator
+import android.media.AudioManager
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.LinearLayout
@@ -77,6 +80,7 @@ class DepthKeyboardService : InputMethodService() {
     }
 
     private fun suggestions(box: LinearLayout, fg: Int) {
+        if (!p.getBoolean(SettingsActivity.KEY_SUGGESTIONS, true)) return
         val text = currentInputConnection?.getTextBeforeCursor(80, 0)?.toString().orEmpty()
         val prefix = text.takeLastWhile { it.isLetter() }
         val previous = text.dropLast(prefix.length).trimEnd().substringAfterLast(' ')
@@ -127,7 +131,18 @@ class DepthKeyboardService : InputMethodService() {
 
     private fun key(row: LinearLayout, text: String, weight: Float, fg: Int, longAction: ((View) -> Unit)? = null, action: () -> Unit) {
         val theme = ThemeCatalog.current(this)
-        val button = Button(this).apply { this.text = text; textSize = if (text.length > 1) 10f else 18f; setTextColor(fg); isAllCaps = false; setPadding(0, 0, 0, 0); minHeight = 0; minWidth = 0; background = GradientDrawable().apply { setColor(theme.key); cornerRadius = dp(9).toFloat() }; setOnClickListener { action() }; setOnLongClickListener { longAction?.invoke(this); longAction != null } }
+        val button = Button(this).apply {
+            this.text = text
+            textSize = if (text.length > 1) 10f else 18f
+            setTextColor(fg)
+            isAllCaps = false
+            setPadding(0, 0, 0, 0)
+            minHeight = 0
+            minWidth = 0
+            background = GradientDrawable().apply { setColor(theme.key); cornerRadius = dp(9).toFloat() }
+            setOnClickListener { feedback(); action() }
+            setOnLongClickListener { feedback(); longAction?.invoke(this); longAction != null }
+        }
         row.addView(button, LinearLayout.LayoutParams(0, scaled(if (text.length > 1) 42 else if (compact) 43 else 51), weight).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) })
     }
 
@@ -148,7 +163,19 @@ class DepthKeyboardService : InputMethodService() {
         row.addView(button, LinearLayout.LayoutParams(0, scaled(if (compact) 43 else 51), 1.2f).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) })
     }
 
-    private fun commit(text: String) { currentInputConnection?.commitText(text, 1); if (!p.getBoolean(SettingsActivity.KEY_INCOGNITO, false)) { ClipboardStore(this).add(text); model.learn(text) } }
+    private fun feedback() {
+        if (p.getBoolean(SettingsActivity.KEY_HAPTIC, false)) {
+            (getSystemService(VIBRATOR_SERVICE) as? Vibrator)?.vibrate(8)
+        }
+        if (p.getBoolean(SettingsActivity.KEY_SOUND, false)) {
+            (getSystemService(AUDIO_SERVICE) as? AudioManager)?.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD)
+        }
+    }
+
+    private fun commit(text: String) {
+        currentInputConnection?.commitText(text, 1)
+        if (!p.getBoolean(SettingsActivity.KEY_INCOGNITO, false)) model.learn(text)
+    }
     private fun paste() { ClipboardStore(this).items().firstOrNull()?.let { commit(it) } }
     private fun space() { if (p.getBoolean(SettingsActivity.KEY_DOUBLE_SPACE, true) && currentInputConnection?.getTextBeforeCursor(2, 0)?.toString() == "  ") { currentInputConnection?.deleteSurroundingText(2, 0); commit(". ") } else if (p.getBoolean(SettingsActivity.KEY_AUTOCORRECT, true)) { autocorrectAndSpace() } else commit(" ") }
     private fun autocorrectAndSpace() { val c = currentInputConnection ?: return; val before = c.getTextBeforeCursor(80, 0)?.toString().orEmpty(); val word = before.takeLastWhile { !it.isWhitespace() }; val corrected = FeatureEngine.autocorrect(word); if (corrected != word && word.isNotEmpty()) { c.deleteSurroundingText(word.length, 0); commit(corrected) }; commit(" ") }

@@ -3,6 +3,7 @@ name: Build and Release Android APK
 on:
   push:
     branches: [master]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -73,38 +74,26 @@ jobs:
             echo
             echo "## Features"
             echo
-            echo "### AI and writing assistance"
-            echo "- Copilot Chat for research, ideas, planning, and writing without leaving the current app."
-            echo "- AI Tone and Rewrite with Professional, Casual, Polite, and Social Post styles."
-            echo "- Writing assistance for improving wording, correcting grammar, restructuring sentences, and suggesting alternatives."
-            echo "- Microsoft Translator built into the keyboard with support for 60+ languages."
-            echo
             echo "### Smart typing"
-            echo "- Next-word prediction and personalized predictions based on typing behavior."
-            echo "- Automatic autocorrect and common grammar/error correction."
-            echo "- Flow/swipe typing for sliding across letters."
-            echo "- Personal dictionary for frequently used words and phrases."
+            echo "- Next-word suggestions, local personalization, autocorrect, and common grammar corrections."
+            echo "- Double-space punctuation, shift/caps lock, long-press accent input, and flow/swipe typing."
+            echo "- Local learned words with an option to clear personalization data."
             echo
-            echo "### Voice and rich input"
-            echo "- Voice typing with multimodal dictation while the keyboard remains available."
-            echo "- Emoji collection with categories and search."
-            echo "- GIF search and static or animated stickers."
-            echo "- Clipboard history and shortcuts for reusable phrases."
+            echo "### Layouts and languages"
+            echo "- QWERTY, QWERTZ, AZERTY, DVORAK, and COLEMAK layouts."
+            echo "- English, Urdu, Arabic, Spanish, French, German, Italian, Portuguese, and Turkish language options."
+            echo "- Standard, one-handed, floating, split/thumb, compact, adjustable size, width, height, and optional number row."
             echo
-            echo "### Customization and layouts"
-            echo "- Hundreds of keyboard themes plus custom and photo themes."
-            echo "- Customizable toolbar with quick access to frequently used tools."
-            echo "- QWERTY and alternate layouts, one-handed mode, floating keyboard, and thumb/split layout."
-            echo "- Adjustable keyboard size and toolbar language switching."
+            echo "### Rich input and customization"
+            echo "- Categorized emoji picker with recent emoji history."
+            echo "- Local clipboard history with clear controls."
+            echo "- Theme selection, custom colors, high contrast, smartbar, search, and keyboard settings access."
+            echo "- Optional haptic feedback, key sounds, key pop-up setting, and incognito mode."
             echo
-            echo "### Languages and privacy"
-            echo "- Multilingual typing with language-specific predictions and fast language switching."
-            echo "- On-device learning by default, with optional Backup & Sync when signed in."
-            echo "- Incognito mode, personalization controls, and learned-language-data management."
-            echo
-            echo "### Toolbar tools"
-            echo "- Settings, account management, keyboard layout switcher, resize, and autocorrect controls."
-            echo "- Voice-to-text, Messaging Center, Search, Themes, GIFs, Stickers, Clipboard, Emoji, Translator, Copilot, Tone, and Chat."
+            echo "### Privacy"
+            echo "- Local-first typing data and clipboard storage."
+            echo "- Incognito mode disables learning and clipboard capture."
+            echo "- Online translation, GIFs, stickers, voice transcription, cloud sync, and external AI providers are not bundled in this APK."
           } > release-notes.md
 
       - name: Upload APK artifact
@@ -118,7 +107,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.name }}
+          tag_name: ${{ github.ref_name }}
           name: Depth Keyboard ${{ steps.version.outputs.name }}
           target_commitish: ${{ github.sha }}
           body_path: android/release-notes.md
