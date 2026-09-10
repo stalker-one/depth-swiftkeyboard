@@ -137,7 +137,7 @@ class SettingsActivity : Activity() {
     }
     private fun themeEditor() {
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(8), dp(24), 0) }
-        val bg = colorInput("Background", "custom_bg", "#111827", box); val key = colorInput("Key color", "custom_key", "#1F2937", box); val text = colorInput("Text color", "#custom_text", "#FFFFFF", box)
+        val bg = colorInput("Background", "custom_bg", "#111827", box); val key = colorInput("Key color", "custom_key", "#1F2937", box); val text = colorInput("Text color", "custom_text", "#FFFFFF", box)
         AlertDialog.Builder(this).setTitle("Custom theme colors").setMessage("Enter hex colors such as #111827 or #FFFFFF. The keyboard updates when it is reopened.").setView(box).setNegativeButton("Cancel", null).setPositiveButton("Save") { _, _ -> p.edit().putString(KEY_THEME, "custom").putString("custom_bg", bg.text.toString()).putString("custom_key", key.text.toString()).putString("custom_text", text.text.toString()).apply(); Toast.makeText(this, "Custom theme saved", Toast.LENGTH_SHORT).show() }.show()
     }
     private fun preciseSizing() {
