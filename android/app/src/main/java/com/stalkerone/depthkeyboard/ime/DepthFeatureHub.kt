@@ -8,11 +8,12 @@ import com.stalkerone.depthkeyboard.ime.sync.SyncController
 import com.stalkerone.depthkeyboard.ime.voice.VoiceInputController
 import com.stalkerone.depthkeyboard.ime.nlp.SmartTypingEngine
 
-class DepthFeatureHub(context: Context) {
-    val privacy = PrivacyController(context)
-    val sync = SyncController(context)
+class DepthFeatureHub(private val appContext: Context) {
+    val privacy = PrivacyController(appContext)
+    val sync = SyncController(appContext)
     val extensions = ExtensionRegistry()
     val media = ExternalMediaRegistry()
     val typing = SmartTypingEngine()
-    fun voiceIntent() = VoiceInputController.intent(context)
+
+    fun voiceIntent() = VoiceInputController.intent(appContext)
 }
