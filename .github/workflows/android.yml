@@ -72,8 +72,11 @@ jobs:
             echo "This release is used by the in-app update system."
             echo "The APK asset is named depth-keyboard.apk."
             echo
-            echo "## Features"
+            echo "## Feature architecture"
+            echo "- Modular editor, privacy, NLP, media, voice, translator, sync, extension, and layout components are included in the Android source."
+            echo "- Local-first components do not contain API credentials or proprietary keyboard source code."
             echo
+            echo "## Features"
             echo "### Smart typing"
             echo "- Next-word suggestions, local personalization, autocorrect, and common grammar corrections."
             echo "- Double-space punctuation, shift/caps lock, long-press accent input, and flow/swipe typing."
@@ -90,10 +93,13 @@ jobs:
             echo "- Theme selection, custom colors, high contrast, smartbar, search, and keyboard settings access."
             echo "- Optional haptic feedback, key sounds, key pop-up setting, and incognito mode."
             echo
+            echo "### Provider architecture"
+            echo "- Voice, translation, GIF/sticker media, cloud sync, extensions, and AI providers have dedicated interfaces/components."
+            echo "- Network-backed services require an explicitly configured provider; this APK does not embed provider secrets."
+            echo
             echo "### Privacy"
             echo "- Local-first typing data and clipboard storage."
             echo "- Incognito mode disables learning and clipboard capture."
-            echo "- Online translation, GIFs, stickers, voice transcription, cloud sync, and external AI providers are not bundled in this APK."
           } > release-notes.md
 
       - name: Upload APK artifact
