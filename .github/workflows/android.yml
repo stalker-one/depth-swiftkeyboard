@@ -2,7 +2,7 @@ name: Build and Release Android APK
 
 on:
   push:
-    branches: [master]
+    branches: [master, fix/android-keyboard-features]
     tags: ['v*']
   pull_request:
   workflow_dispatch:
