@@ -72,34 +72,33 @@ jobs:
             echo "This release is used by the in-app update system."
             echo "The APK asset is named depth-keyboard.apk."
             echo
-            echo "## Feature architecture"
-            echo "- Modular editor, privacy, NLP, media, voice, translator, sync, extension, and layout components are included in the Android source."
-            echo "- Local-first components do not contain API credentials or proprietary keyboard source code."
+            echo "## Smart typing"
+            echo "- Local autocorrect with an expanded spelling correction set."
+            echo "- Next-word prediction combining local model, dictionary and personalized learned words."
+            echo "- Sentence capitalization, punctuation spacing and one-tap Fix/polish."
+            echo "- Double-space period, caps lock, long-press alternate characters and Flow/swipe input."
             echo
-            echo "## Features"
-            echo "### Smart typing"
-            echo "- Next-word suggestions, local personalization, autocorrect, and common grammar corrections."
-            echo "- Double-space punctuation, shift/caps lock, long-press accent input, and flow/swipe typing."
-            echo "- Local learned words with an option to clear personalization data."
+            echo "## Keyboard controls"
+            echo "- QWERTY, QWERTZ, AZERTY, DVORAK and COLEMAK."
+            echo "- Language switching through the installed language catalog."
+            echo "- Standard, one-handed, floating, split/thumb, tablet and compact layout controls."
+            echo "- Adjustable size, width, height, optional number row, haptics, sounds and high contrast."
             echo
-            echo "### Layouts and languages"
-            echo "- QWERTY, QWERTZ, AZERTY, DVORAK, and COLEMAK layouts."
-            echo "- English, Urdu, Arabic, Spanish, French, German, Italian, Portuguese, and Turkish language options."
-            echo "- Standard, one-handed, floating, split/thumb, compact, adjustable size, width, height, and optional number row."
+            echo "## Rich input"
+            echo "- Emoji categories and recent emoji history."
+            echo "- Local clipboard history with clear/delete controls."
+            echo "- Voice entry through Android speech recognition."
+            echo "- Search from the keyboard."
+            echo "- Translation, GIF/sticker and AI provider hooks without embedded secrets."
             echo
-            echo "### Rich input and customization"
-            echo "- Categorized emoji picker with recent emoji history."
-            echo "- Local clipboard history with clear controls."
-            echo "- Theme selection, custom colors, high contrast, smartbar, search, and keyboard settings access."
-            echo "- Optional haptic feedback, key sounds, key pop-up setting, and incognito mode."
+            echo "## Privacy"
+            echo "- Local-first personalization and clipboard storage."
+            echo "- Incognito mode stops personalization and clipboard capture."
+            echo "- Cloud sync/account settings are opt-in provider hooks."
             echo
-            echo "### Provider architecture"
-            echo "- Voice, translation, GIF/sticker media, cloud sync, extensions, and AI providers have dedicated interfaces/components."
-            echo "- Network-backed services require an explicitly configured provider; this APK does not embed provider secrets."
-            echo
-            echo "### Privacy"
-            echo "- Local-first typing data and clipboard storage."
-            echo "- Incognito mode disables learning and clipboard capture."
+            echo "## Architecture"
+            echo "- Modular editor, privacy, NLP, media, voice, translator, sync, extension and layout components."
+            echo "- Provider-neutral AI contract for backend-based AI, rewrite, translation and search."
           } > release-notes.md
 
       - name: Upload APK artifact
@@ -110,10 +109,10 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release and APK
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/master' && startsWith(github.event.head_commit.message, 'release:'))
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', steps.version.outputs.name) }}
           name: Depth Keyboard ${{ steps.version.outputs.name }}
           target_commitish: ${{ github.sha }}
           body_path: android/release-notes.md
