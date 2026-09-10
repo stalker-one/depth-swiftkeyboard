@@ -132,7 +132,7 @@ class SettingsActivity : Activity() {
         refresh(); return b
     }
     private fun providerDialog(title: String, key: String, fallback: String) {
-        val input = EditText(this).apply { setText(p.getString(key, "")); hint = fallback; singleLine = true }
+        val input = EditText(this).apply { setText(p.getString(key, "")); hint = fallback; setSingleLine(true) }
         AlertDialog.Builder(this).setTitle("$title provider endpoint").setMessage("Optional. Keep API keys on your backend; do not paste secrets into the APK.").setView(input).setNegativeButton("Cancel", null).setPositiveButton("Save") { _, _ -> p.edit().putString(key, input.text.toString().trim()).apply(); Toast.makeText(this, "$title endpoint saved", Toast.LENGTH_SHORT).show() }.show()
     }
     private fun themeEditor() {

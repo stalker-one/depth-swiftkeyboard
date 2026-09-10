@@ -109,10 +109,10 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release and APK
-        if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/master' && startsWith(github.event.head_commit.message, 'release:'))
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', steps.version.outputs.name) }}
+          tag_name: ${{ github.ref_name }}
           name: Depth Keyboard ${{ steps.version.outputs.name }}
           target_commitish: ${{ github.sha }}
           body_path: android/release-notes.md
